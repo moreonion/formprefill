@@ -28,6 +28,16 @@
     });
   };
 
+  SessionStorage.prototype.removeItems = function(keys) {
+    var self = this;
+    return new Promise(function(resolve, reject) {
+      $.each(keys, function(i, key) {
+        sessionStorage.removeItem(self.pfx + ':' + key);
+      });
+      resolve(true);
+    });
+  };
+
   SessionStorage.prototype.getFirst = function(keys) {
     var self = this;
     return new Promise(function(resolve, reject) {
@@ -47,7 +57,7 @@
     var type = $e.attr('type'), name = $e.attr('name');
     if (!name)
       return undefined;
-    var fragments = name.match(/\[[^\]]+\]/g);
+    var fragments = name.match(/\[[^\]]+\]/g) || [];
     if (!fragments.length || (type == 'checkbox' && fragments.length < 2))
       return undefined;
     var suggestedFragment = (type == 'checkbox') ? fragments[fragments.length - 2] : fragments[fragments.length - 1];
@@ -76,6 +86,25 @@
     }
   };
 
+  var deduplicateSets = privates.deduplicateSets = function($els) {
+    // Remove all but one from each set of checkboxes or radios with the same
+    // write attribute to prevent multiple writes to the stores.
+    var sets = [];
+    return $els.filter(function() {
+      var keys = $(this).data('form-prefill-write');
+      var type = $(this).attr('type');
+      if (type == 'checkbox' || type == 'radio') {
+        if (sets.indexOf(keys) === -1) {
+          sets.push(keys);
+          return true;
+        } else {
+          return false;
+        }
+      }
+      return true;
+    });
+  };
+
 
   $.fn.formPrefill = function(options) {
 
@@ -85,15 +114,17 @@
 
       // Check for data attributes.
       if (typeof $e.data('form-prefill-keys') !== 'undefined') {
-        $e.data('form-prefill-read', $e.data('form-prefill-keys'));
-        $e.data('form-prefill-write', $e.data('form-prefill-keys'));
+        // Set data attributes so elements can be found via selector.
+        // As the order of write keys is irrelevant, we sort them to make it
+        // possible to determine sets of checkboxes via string comparison of their write keys.
+        $e.attr('data-form-prefill-read', $e.data('form-prefill-keys'));
+        $e.attr('data-form-prefill-write', serializeAttribute(parseAttribute($e.data('form-prefill-keys')).sort()));
       }
       if (typeof $e.data('form-prefill-read') === 'undefined'
         && typeof $e.data('form-prefill-write') === 'undefined') {
         var keys = settings.storageKeys($e);
-        // Set data attributes so elements can be found via selector.
         if (keys && typeof keys.read !== 'undefined') $e.attr('data-form-prefill-read', serializeAttribute(keys.read));
-        if (keys && typeof keys.write !== 'undefined') $e.attr('data-form-prefill-write', serializeAttribute(keys.write));
+        if (keys && typeof keys.write !== 'undefined') $e.attr('data-form-prefill-write', serializeAttribute(parseAttribute(keys.write).sort()));
       }
     };
 
@@ -114,10 +145,11 @@
         });
       }).then(function(value) {
         self.prefill(value);
+        return value;
       });
     };
 
-    Api.prototype.write = function() {
+    Api.prototype.write = function(options) {
       var self = this;
       var keys = parseAttribute(this.$element.data('form-prefill-write'));
       if (!keys.length) return;
@@ -126,9 +158,17 @@
 
       var promises = [];
       $.each(self.stores, function(i, store) {
-        promises.push(store.setItems(keys, self.getVal()));
+        if (options && options.delete === true) {
+          promises.push(store.removeItems(keys));
+        } else {
+          promises.push(store.setItems(keys, self.getVal()));
+        }
       });
-      return Promise.all(promises);
+      return Promise.all(promises).then(function() {
+        // All fine.
+      }, function() {
+        // Swallow rejected promises from stores.
+      });
     }
 
     Api.prototype.prefill = function(value) {
@@ -178,7 +218,8 @@
     ];
 
     return this.each(function() {
-      var $inputs = $wrapper.find('input, select, textarea').not(function(i, element) {
+      var $self = $(this);
+      var $inputs = $self.find('input, select, textarea').not(function(i, element) {
         // Exclude file elements. We can't prefill those.
         if ($(element).attr('type') == 'file') {
           return true;
@@ -193,14 +234,45 @@
         return false;
       });
 
+      // This is the form’s api
+      $self.data('formPrefill', {
+        writeAll: function() {
+          $write = deduplicateSets($inputs);
+          $write.each(function() {
+            $(this).data('formPrefill').write();
+          });
+        },
+        removeAll: function() {
+          $write = deduplicateSets($inputs);
+          $write.each(function() {
+            $(this).data('formPrefill').write({delete: true});
+          });
+          $self.trigger('form-prefill:cleared');
+        },
+        readAll: function() {
+          var prefilled = [];
+          $inputs.each(function() {
+            $el = $(this);
+            $el.data('formPrefill').read().then(function(value) {
+              $el.trigger('form-prefill:prefilled', {
+                $element: $el,
+                value: value
+              });
+            });
+          });
+        }
+      });
+
+      // Initialize elements api
       $inputs.each(function() {
         var $e = $(this);
         var api = new Api($e, stores);
         $e.data('formPrefill', api);
       });
 
+      // Write to stores on change
       $inputs.on('change.form-prefill', function() {
-        // TODO call store function
+        $(this).data('formPrefill').write();
       });
     });
   };
