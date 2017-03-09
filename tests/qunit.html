@@ -103,7 +103,7 @@ QUnit.module('Api', {
   before: function() {
     this.Api = $.fn.formPrefill('privates').Api;
     this.$fixture = $('#qunit-fixture');
-    this.$form = $('form').appendTo(this.$fixture);
+    this.$form = $('<form>').appendTo(this.$fixture);
   },
   after: function() {
     this.$fixture.empty();
