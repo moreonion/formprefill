@@ -105,6 +105,58 @@
     });
   };
 
+  // Parse the hash from the hash string and clean them from the string.
+  // The hash string is first split into parts using a semi-colon";" as a
+  // separator. Each part that contains prefill variables (with the "p:"-prefix)
+  // is then removed.
+  // All prefill-values are stored into the stores in string and list format.
+  var readUrlVars = privates.readUrlVars = function(hash, stores, settings) {
+    hash = hash || window.location.hash.substr(1);
+    if (!hash) {
+      return '';
+    }
+    var vars = {}, key, value, p, parts, new_parts = [];
+    parts = hash.split(';');
+    for (var j = 0; j < parts.length; j++) {
+      var part_has_prefill_vars = false;
+      var part = parts[j];
+      // Parts starting with p: are used for pre-filling.
+      if (part.substr(0, 2) == 'p:') {
+        var hashes = part.substr(2).split('&');
+        for (var i = 0; i < hashes.length; i++) {
+          p = hashes[i].indexOf('=');
+          key = hashes[i].substring(0, p);
+          // Backwards compatibility strip p: prefixes from keys.
+          if (key.substr(0, 2) == 'p:') {
+            key = key.substr(2);
+          }
+          value = hashes[i].substring(p+1);
+            // Prepare values to be set as list values.
+          if (!(key in vars)) {
+            vars[key] = [];
+          }
+          vars[key].push(value);
+          // Set string values directly.
+          $.each(stores, function(index, store) {
+            store.setItems([settings.stringPrefix + ':' + key], value);
+          });
+        }
+      }
+      else {
+        new_parts.push(part);
+      }
+    }
+
+    // Finally set all list values.
+    $.each(stores, function(index, store) {
+      $.each(vars, function(key, value) {
+        store.setItems([settings.listPrefix + ':' + key], value);
+      });
+    });
+
+    return new_parts.join(';');
+  };
+
 
   $.fn.formPrefill = function(options) {
 
@@ -222,6 +274,14 @@
     var stores = settings.stores.length ? settings.stores : [
       new SessionStorage(settings.prefix)
     ];
+
+    var hash = window.location.hash.substr(1);
+    if (hash) {
+      var newHash = readUrlVars(hash, stores, settings);
+      if (newHash != hash) {
+        window.location.hash = '#' + newHash;
+      }
+    }
 
     return this.each(function() {
       var $self = $(this);

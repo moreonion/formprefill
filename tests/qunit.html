@@ -33,6 +33,10 @@ Store.prototype.getFirst = function(keys) {
 QUnit.module('utils', {
   before: function() {
     this.privates = $.fn.formPrefill('privates');
+    this.settings = {
+      stringPrefix: 's',
+      listPrefix: 'l'
+    };
   }
 });
 
@@ -64,6 +68,40 @@ QUnit.test('storageKeys: radios', function(assert) {
   var r = this.privates.storageKeys($('<input name="submitted[foo]" value="bar" type="radio">'));
   assert.equal(r.read, 'foo');
   assert.equal(r.write, 'foo');
+});
+
+QUnit.test( "readUrlVars: p:test=testval&p:test=testval2;somethingelse", function (assert) {
+  var self = this, done = assert.async();
+  var store = new Store();
+  setTimeout(function() {
+    var ret = self.privates.readUrlVars('p:test=testval&p:test=testval2;somethingelse', [store], self.settings);
+    assert.equal(ret, 'somethingelse');
+    assert.equal(store.data['s:test'], 'testval2');
+    assert.deepEqual(store.data['l:test'], ['testval', 'testval2']);
+    done();
+  }, 20);
+});
+
+QUnit.test( "readUrlVars: p:test=testval&test=testval2;somethingelse", function (assert) {
+  var self = this, done = assert.async();
+  var store = new Store();
+  setTimeout(function() {
+    var ret = self.privates.readUrlVars('p:test=testval&test=testval2;somethingelse', [store], self.settings);
+    assert.equal(ret, 'somethingelse');
+    assert.equal(store.data['s:test'], 'testval2');
+    assert.deepEqual(store.data['l:test'], ['testval', 'testval2']);
+    done();
+  }, 20);
+});
+
+QUnit.test( "readUrlVars: p:test (All parts starting with 'p:' should be removed)", function (assert) {
+  var self = this, done = assert.async();
+  var store = new Store();
+  setTimeout(function() {
+    var ret = self.privates.readUrlVars('p:test', [store], self.settings);
+    assert.equal(ret, '');
+    done();
+  }, 20);
 });
 
 QUnit.module('SessionStorage', {
