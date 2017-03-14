@@ -111,6 +111,12 @@
     var Api = privates.Api = function($e, stores) {
       this.$element = $e;
       this.stores = stores;
+      var type = $e.attr('type');
+      if (type == 'radio' || type == 'checkbox') {
+        this.initialValue = $e[0].checked;
+      } else {
+        this.initialValue = $e.val();
+      }
 
       // Check for data attributes.
       if (typeof $e.data('form-prefill-keys') !== 'undefined') {
@@ -242,11 +248,23 @@
             $(this).data('formPrefill').write();
           });
         },
-        removeAll: function() {
+        removeAll: function(options) {
+          options = options || {resetFields: true};
           $write = deduplicateSets($inputs);
           $write.each(function() {
             $(this).data('formPrefill').write({delete: true});
           });
+          if (options.resetFields) {
+            $inputs.each(function() {
+              var $field = $(this), api = $field.data('formPrefill');
+              var type = $field.attr('type');
+              if (type == 'radio' || type == 'checkbox') {
+                $field[0].checked = api.initialValue;
+              } else {
+                $field.val(api.initialValue);
+              }
+            });
+          }
           $self.trigger('form-prefill:cleared');
         },
         readAll: function() {
