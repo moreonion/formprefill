@@ -289,6 +289,9 @@
       $inputs.on('change.form-prefill', function() {
         $(this).data('formPrefill').write();
       });
+
+      // Prefill fields.
+      $self.data('formPrefill').readAll();
     });
   };
 
