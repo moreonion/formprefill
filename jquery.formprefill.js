@@ -1,5 +1,23 @@
 (function( $ ) {
 
+  var defaults = {
+    prefix: 'formPrefill',
+    storageKeys: function() {
+      return {
+        read: "key",
+        write: "key"
+      };
+    },
+    map: {},
+    exclude: '[data-form-prefill-exclude]',
+    include: '[data-form-prefill-include]',
+    stringPrefix: 's',
+    listPrefix: 'l',
+    stores: [],
+    useSessionStore: true,
+    useCookies: false
+  };
+
   var privates = {}; // Expose methods for testing.
 
   /* Cookie api taken from https://github.com/madmurphy/cookies.js, released under GNU Public License, version 3 or later */
@@ -131,7 +149,7 @@
 
   // Util methods:
 
-  var storageKeys = privates.storageKeys = function($e) {
+  defaults.storageKeys = privates.storageKeys = function($e) {
     var type = $e.attr('type'), name = $e.attr('name');
     if (!name)
       return undefined;
@@ -235,126 +253,118 @@
     return new_parts.join(';');
   };
 
-
-  $.fn.formPrefill = function(options) {
-
-    var Api = privates.Api = function($e, stores) {
-      this.$element = $e;
-      this.stores = stores;
-      var type = $e.attr('type');
-      if (type == 'radio' || type == 'checkbox') {
-        this.initialValue = $e[0].checked;
-      } else {
-        this.initialValue = $e.val();
-      }
-
-      // Check for data attributes.
-      if (typeof $e.data('form-prefill-keys') !== 'undefined') {
-        // Set data attributes so elements can be found via selector.
-        // As the order of write keys is irrelevant, we sort them to make it
-        // possible to determine sets of checkboxes via string comparison of their write keys.
-        $e.attr('data-form-prefill-read', $e.data('form-prefill-keys'));
-        $e.attr('data-form-prefill-write', serializeAttribute(parseAttribute($e.data('form-prefill-keys')).sort()));
-      }
-      if (typeof $e.data('form-prefill-read') === 'undefined'
-        && typeof $e.data('form-prefill-write') === 'undefined') {
-        var keys = settings.storageKeys($e);
-        if (keys && typeof keys.read !== 'undefined') $e.attr('data-form-prefill-read', serializeAttribute(keys.read));
-        if (keys && typeof keys.write !== 'undefined') $e.attr('data-form-prefill-write', serializeAttribute(parseAttribute(keys.write).sort()));
-      }
-    };
-
-    Api.prototype.read = function() {
-      var self = this;
-      var keys = parseAttribute(this.$element.data('form-prefill-read'));
-      if (!keys.length) return;
-
-      prefixArray(this.getFormatPrefix(), keys);
-
-      return new Promise(function(resolve, reject) {
-        $.each(self.stores, function(i, store) {
-          store.getFirst(keys).then(function(value) {
-            resolve(value);
-          }, function() {
-            // Swallow rejected promises from stores.
-          })
-        });
-      }).then(function(value) {
-        self.prefill(value);
-        return value;
-      });
-    };
-
-    Api.prototype.write = function(options) {
-      var self = this;
-      var keys = parseAttribute(this.$element.data('form-prefill-write'));
-      if (!keys.length) return;
-
-      prefixArray(this.getFormatPrefix(), keys);
-
-      var promises = [];
-      $.each(self.stores, function(i, store) {
-        if (options && options.delete === true) {
-          promises.push(store.removeItems(keys));
-        } else {
-          promises.push(store.setItems(keys, self.getVal()));
-        }
-      });
-      return Promise.all(promises).then(function() {
-        // All fine.
-      }, function() {
-        // Swallow rejected promises from stores.
-      });
+  var Api = privates.Api = function($e, stores, options) {
+    settings = $.extend(defaults, options);
+    this.stringPrefix = settings.stringPrefix;
+    this.listPrefix = settings.listPrefix;
+    this.$element = $e;
+    this.stores = stores;
+    var type = $e.attr('type');
+    if (type == 'radio' || type == 'checkbox') {
+      this.initialValue = $e[0].checked;
+    } else {
+      this.initialValue = $e.val();
     }
 
-    Api.prototype.prefill = function(value) {
-      this.$element.val(value);
-    };
+    // Check for data attributes.
+    if (typeof $e.data('form-prefill-keys') !== 'undefined') {
+      // Set data attributes so elements can be found via selector.
+      // As the order of write keys is irrelevant, we sort them to make it
+      // possible to determine sets of checkboxes via string comparison of their write keys.
+      $e.attr('data-form-prefill-read', $e.data('form-prefill-keys'));
+      $e.attr('data-form-prefill-write', serializeAttribute(parseAttribute($e.data('form-prefill-keys')).sort()));
+    }
+    if (typeof $e.data('form-prefill-read') === 'undefined'
+      && typeof $e.data('form-prefill-write') === 'undefined') {
+      var keys = settings.storageKeys($e);
+      if (keys && typeof keys.read !== 'undefined') $e.attr('data-form-prefill-read', serializeAttribute(keys.read));
+      if (keys && typeof keys.write !== 'undefined') $e.attr('data-form-prefill-write', serializeAttribute(parseAttribute(keys.write).sort()));
+    }
+  };
 
-    Api.prototype.getVal = function() {
-      var type = this.$element.attr('type');
-      if (type == 'radio' || type == 'checkbox') {
-        // Get the value from all inputs that write to the same keys.
-        var selector = '';
-        var writeKeys = this.$element.data('form-prefill-write');
-        if (writeKeys) selector += '[data-form-prefill-write="' + writeKeys + '"]'
-        var $set = this.$element.closest('form').find(selector);
-        var checked = [];
-        $set.each(function() {
-          if (this.checked) checked.push(this.value);
-        });
-        return checked;
+  Api.prototype.read = function() {
+    var self = this;
+    var keys = parseAttribute(this.$element.data('form-prefill-read'));
+    if (!keys.length) return;
+
+    prefixArray(this.getFormatPrefix(), keys);
+
+    return new Promise(function(resolve, reject) {
+      $.each(self.stores, function(i, store) {
+        store.getFirst(keys).then(function(value) {
+          resolve(value);
+        }, function() {
+          // Swallow rejected promises from stores.
+        })
+      });
+    }).then(function(value) {
+      self.prefill(value);
+      return value;
+    });
+  };
+
+  Api.prototype.write = function(options) {
+    var self = this;
+    var keys = parseAttribute(this.$element.data('form-prefill-write'));
+    if (!keys.length) return;
+
+    prefixArray(this.getFormatPrefix(), keys);
+
+    var promises = [];
+    $.each(self.stores, function(i, store) {
+      if (options && options.delete === true) {
+        promises.push(store.removeItems(keys));
       } else {
-        return this.$element.val();
+        promises.push(store.setItems(keys, self.getVal()));
       }
-    };
+    });
+    return Promise.all(promises).then(function() {
+      // All fine.
+    }, function() {
+      // Swallow rejected promises from stores.
+    });
+  }
 
-    Api.prototype.getFormatPrefix = function() {
-      var type = this.$element.attr('type');
-      return (type == 'checkbox' || type == 'radio' || this.$element.is('select[multiple]')) ? settings.listPrefix : settings.stringPrefix;
-    };
+  Api.prototype.prefill = function(value) {
+    this.$element.val(value);
+  };
 
-    var settings = $.extend({
-      prefix: 'formPrefill',
-      storageKeys: storageKeys,
-      exclude: '[data-form-prefill-exclude]',
-      include: '[data-form-prefill-include]',
-      stringPrefix: 's',
-      listPrefix: 'l',
-      stores: [],
-      useSessionStore: true,
-      useCookies: false
-    }, options );
+  Api.prototype.getVal = function() {
+    var type = this.$element.attr('type');
+    if (type == 'radio' || type == 'checkbox') {
+      // Get the value from all inputs that write to the same keys.
+      var selector = '';
+      var writeKeys = this.$element.data('form-prefill-write');
+      if (writeKeys) selector += '[data-form-prefill-write="' + writeKeys + '"]'
+      var $set = this.$element.closest('form').find(selector);
+      var checked = [];
+      $set.each(function() {
+        if (this.checked) checked.push(this.value);
+      });
+      return checked;
+    } else {
+      return this.$element.val();
+    }
+  };
+
+  Api.prototype.getFormatPrefix = function() {
+    var type = this.$element.attr('type');
+    return (type == 'checkbox' || type == 'radio' || this.$element.is('select[multiple]')) ? this.listPrefix : this.stringPrefix;
+  };
+
+  $.fn.formPrefill = function(options) {
 
     // Make private methods testable.
     if (options == 'privates') {
       return privates;
     }
 
-    var stores = settings.stores;
+    var settings = $.extend(defaults, options);
+
+    var stores = $.extend(true, [], settings.stores);
     if (settings.useSessionStore) {
       var s = new SessionStorage(settings.prefix);
-      if (sessionStorage.browserSupport) stores.push(s);
+      if (s.browserSupport()) stores.push(s);
     }
     if (settings.useCookies) stores.push(new CookieStorage(settings.prefix));
 
@@ -424,7 +434,7 @@
       // Initialize elements api
       $inputs.each(function() {
         var $e = $(this);
-        var api = new Api($e, stores);
+        var api = new Api($e, stores, settings);
         $e.data('formPrefill', api);
       });
 
