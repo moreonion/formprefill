@@ -2,6 +2,84 @@
 
   var privates = {}; // Expose methods for testing.
 
+  /* Cookie api taken from https://github.com/madmurphy/cookies.js, released under GNU Public License, version 3 or later */
+  var docCookies = privates.docCookies = {
+    getItem: function (sKey) {
+      if (!sKey) { return null; }
+      return decodeURIComponent(document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*([^;]*).*$)|^.*$"), "$1")) || null;
+    },
+    setItem: function (sKey, sValue, vEnd, sPath, sDomain, bSecure) {
+      if (!sKey || /^(?:expires|max\-age|path|domain|secure)$/i.test(sKey)) { return false; }
+      var sExpires = "";
+      if (vEnd) {
+        switch (vEnd.constructor) {
+          case Number:
+            sExpires = vEnd === Infinity ? "; expires=Fri, 31 Dec 9999 23:59:59 GMT" : "; max-age=" + vEnd;
+            break;
+          case String:
+            sExpires = "; expires=" + vEnd;
+            break;
+          case Date:
+            sExpires = "; expires=" + vEnd.toUTCString();
+            break;
+        }
+      }
+      document.cookie = encodeURIComponent(sKey) + "=" + encodeURIComponent(sValue) + sExpires + (sDomain ? "; domain=" + sDomain : "") + (sPath ? "; path=" + sPath : "") + (bSecure ? "; secure" : "");
+      return true;
+    },
+    removeItem: function (sKey, sPath, sDomain) {
+      if (!this.hasItem(sKey)) { return false; }
+      document.cookie = encodeURIComponent(sKey) + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT" + (sDomain ? "; domain=" + sDomain : "") + (sPath ? "; path=" + sPath : "");
+      return true;
+    },
+    hasItem: function (sKey) {
+      if (!sKey) { return false; }
+      return (new RegExp("(?:^|;\\s*)" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=")).test(document.cookie);
+    },
+    keys: function () {
+      var aKeys = document.cookie.replace(/((?:^|\s*;)[^\=]+)(?=;|$)|^\s*|\s*(?:\=[^;]*)?(?:\1|$)/g, "").split(/\s*(?:\=[^;]*)?;\s*/);
+      for (var nLen = aKeys.length, nIdx = 0; nIdx < nLen; nIdx++) { aKeys[nIdx] = decodeURIComponent(aKeys[nIdx]); }
+      return aKeys;
+    }
+  };
+
+  var CookieStorage = privates.CookieStorage = function(pfx) {
+    this.pfx = pfx;
+  };
+
+  CookieStorage.prototype.setItems = function(keys, value) {
+    var self = this;
+    return new Promise(function(resolve, reject) {
+      $.each(keys, function(i, key) {
+        docCookies.setItem(self.pfx + ':' + key, JSON.stringify(value), Infinity, '/');
+      });
+      resolve(true);
+    });
+  };
+
+  CookieStorage.prototype.removeItems = function(keys) {
+    var self = this;
+    return new Promise(function(resolve, reject) {
+      $.each(keys, function(i, key) {
+        docCookies.removeItem(self.pfx + ':' + key, '/');
+      });
+      resolve(true);
+    });
+  };
+
+  CookieStorage.prototype.getFirst = function(keys) {
+    var self = this;
+    return new Promise(function(resolve, reject) {
+      $.each(keys, function(i, key) {
+        var v = docCookies.getItem(self.pfx + ':' + key);
+        if (v !== null) {
+          resolve(JSON.parse(v));
+        }
+      });
+      reject(new Error(self.pfx + ':' + key + ' not found in sessionStorage'));
+    });
+  };
+
   var SessionStorage = privates.SessionStorage = function(pfx) {
     this.pfx = pfx;
   };
@@ -263,7 +341,9 @@
       include: '[data-form-prefill-include]',
       stringPrefix: 's',
       listPrefix: 'l',
-      stores: []
+      stores: [],
+      useSessionStore: true,
+      useCookies: false
     }, options );
 
     // Make private methods testable.
@@ -271,9 +351,9 @@
       return privates;
     }
 
-    var stores = settings.stores.length ? settings.stores : [
-      new SessionStorage(settings.prefix)
-    ];
+    var stores = settings.stores;
+    if (settings.useSessionStore) stores.push(new SessionStorage(settings.prefix));
+    if (settings.useCookies) stores.push(new CookieStorage(settings.prefix));
 
     var hash = window.location.hash.substr(1);
     if (hash) {
