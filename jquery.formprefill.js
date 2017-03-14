@@ -352,7 +352,10 @@
     }
 
     var stores = settings.stores;
-    if (settings.useSessionStore) stores.push(new SessionStorage(settings.prefix));
+    if (settings.useSessionStore) {
+      var s = new SessionStorage(settings.prefix);
+      if (sessionStorage.browserSupport) stores.push(s);
+    }
     if (settings.useCookies) stores.push(new CookieStorage(settings.prefix));
 
     var hash = window.location.hash.substr(1);
