@@ -270,12 +270,9 @@
         readAll: function() {
           var prefilled = [];
           $inputs.each(function() {
-            $el = $(this);
+            var $el = $(this);
             $el.data('formPrefill').read().then(function(value) {
-              $el.trigger('form-prefill:prefilled', {
-                $element: $el,
-                value: value
-              });
+              $el.trigger('form-prefill:prefilled');
             });
           });
         }
