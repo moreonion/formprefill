@@ -187,7 +187,7 @@
     // write attribute to prevent multiple writes to the stores.
     var sets = [];
     return $els.filter(function() {
-      var keys = $(this).data('form-prefill-write');
+      var keys = $(this).attr('data-form-prefill-write');
       var type = $(this).attr('type');
       if (type == 'checkbox' || type == 'radio') {
         if (sets.indexOf(keys) === -1) {
@@ -253,8 +253,8 @@
     return new_parts.join(';');
   };
 
-  var Api = privates.Api = function($e, stores, options) {
-    settings = $.extend(defaults, options);
+  var Api = privates.Api = function($e, stores, settings) {
+    settings = settings || $.extend({}, defaults);
     this.stringPrefix = settings.stringPrefix;
     this.listPrefix = settings.listPrefix;
     this.$element = $e;
@@ -267,24 +267,34 @@
     }
 
     // Check for data attributes.
-    if (typeof $e.data('form-prefill-keys') !== 'undefined') {
+    if (typeof $e.attr('data-form-prefill-keys') !== 'undefined') {
       // Set data attributes so elements can be found via selector.
       // As the order of write keys is irrelevant, we sort them to make it
       // possible to determine sets of checkboxes via string comparison of their write keys.
-      $e.attr('data-form-prefill-read', $e.data('form-prefill-keys'));
-      $e.attr('data-form-prefill-write', serializeAttribute(parseAttribute($e.data('form-prefill-keys')).sort()));
+      $e.attr('data-form-prefill-read', $e.attr('data-form-prefill-keys'));
+      $e.attr('data-form-prefill-write', serializeAttribute(parseAttribute($e.attr('data-form-prefill-keys')).sort()));
     }
-    if (typeof $e.data('form-prefill-read') === 'undefined'
-      && typeof $e.data('form-prefill-write') === 'undefined') {
+    if (typeof $e.attr('data-form-prefill-read') === 'undefined'
+      && typeof $e.attr('data-form-prefill-write') === 'undefined') {
       var keys = settings.storageKeys($e);
       if (keys && typeof keys.read !== 'undefined') $e.attr('data-form-prefill-read', serializeAttribute(keys.read));
       if (keys && typeof keys.write !== 'undefined') $e.attr('data-form-prefill-write', serializeAttribute(parseAttribute(keys.write).sort()));
+    }
+    // Add aliases for read keys
+    if (!$.isEmptyObject(settings.map)) {
+      var readKeys = parseAttribute($e.attr('data-form-prefill-read')), aliases = [];
+      for (var i = 0, j = readKeys.length; i < j; i++) {
+        if (readKeys[i] in settings.map) {
+          aliases = aliases.concat(settings.map[readKeys[i]]);
+        }
+      }
+      $e.attr('data-form-prefill-read', serializeAttribute(readKeys.concat(aliases)));
     }
   };
 
   Api.prototype.read = function() {
     var self = this;
-    var keys = parseAttribute(this.$element.data('form-prefill-read'));
+    var keys = parseAttribute(this.$element.attr('data-form-prefill-read'));
     if (!keys.length) return;
 
     prefixArray(this.getFormatPrefix(), keys);
@@ -305,7 +315,7 @@
 
   Api.prototype.write = function(options) {
     var self = this;
-    var keys = parseAttribute(this.$element.data('form-prefill-write'));
+    var keys = parseAttribute(this.$element.attr('data-form-prefill-write'));
     if (!keys.length) return;
 
     prefixArray(this.getFormatPrefix(), keys);
@@ -334,7 +344,7 @@
     if (type == 'radio' || type == 'checkbox') {
       // Get the value from all inputs that write to the same keys.
       var selector = '';
-      var writeKeys = this.$element.data('form-prefill-write');
+      var writeKeys = this.$element.attr('data-form-prefill-write');
       if (writeKeys) selector += '[data-form-prefill-write="' + writeKeys + '"]'
       var $set = this.$element.closest('form').find(selector);
       var checked = [];

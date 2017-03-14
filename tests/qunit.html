@@ -165,6 +165,17 @@ QUnit.test('init with data-form-prefill-read', function(assert) {
   assert.equal($input.data('form-prefill-write'), undefined);
 });
 
+QUnit.test('init with data-form-prefill-read and a map', function(assert) {
+  var $input = $('<input type="text" data-form-prefill-keys="first_name your_name" name="submitted[first_name]">').appendTo(this.$form);
+  var api = new this.Api($input, [], {
+    map: {
+      first_name: ['firstname', 'firstName', 'fname']
+    }
+  });
+  assert.equal($input.data('form-prefill-read'), 'first_name your_name firstname firstName fname');
+  assert.equal($input.data('form-prefill-write'), 'first_name your_name');
+});
+
 QUnit.test('init with data-form-prefill-write', function(assert) {
   var $input = $('<input type="text" data-form-prefill-write="foo bar" name="submitted[first_name]">').appendTo(this.$form);
   var api = new this.Api($input);
