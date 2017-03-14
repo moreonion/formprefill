@@ -319,7 +319,6 @@ QUnit.test('Read all values and trigger events for each field', function(assert)
   sessionStorage.setItem('formPrefill:l:foo', '["one"]');
   sessionStorage.setItem('formPrefill:l:age', '["3"]');
   this.$form.formPrefill();
-  this.$form.data('formPrefill').readAll();
   this.$form.on('form-prefill:prefilled', function(data) {
     assert.notEqual(typeof data, 'undefined');
   });
