@@ -456,7 +456,7 @@
       // Write all on form submit
       $self.on('submit.form-prefill', function() {
         $self.data('formPrefill').writeAll();
-      })
+      });
 
       // Prefill fields.
       $self.data('formPrefill').readAll();
