@@ -71,6 +71,7 @@ $firstName.data('formPrefill').write();
 // Clear this field’s value from the stores:
 $firstName.data('formPrefill').write({delete: true});
 ```
+Each of the field API methods returns a Promise.
 
 ## Populate the stores via url hash
 
@@ -101,5 +102,7 @@ Hash examples:
 By default, the stores are updated when fields fire the `change` event and when the form is submitted. You can remove these handlers: `$('form').find('*').off('.form-prefill')`.
 
 When the plugin populates a field, it fires `form-prefill:prefilled` on the field.
+When it fails to retrieve a value for a field, it fires `form-prefill:failed` on the field, providing the cause as the second argument to the handler function.
+These events bubbles up.
 
 When you call `removeAll()` on the form’s API, `form-prefill:cleared` is fired on the form.

@@ -67,22 +67,18 @@
 
   CookieStorage.prototype.setItems = function(keys, value) {
     var self = this;
-    return new Promise(function(resolve, reject) {
-      $.each(keys, function(i, key) {
-        docCookies.setItem(self.pfx + ':' + key, JSON.stringify(value), Infinity, '/');
-      });
-      resolve(true);
+    $.each(keys, function(i, key) {
+      docCookies.setItem(self.pfx + ':' + key, JSON.stringify(value), Infinity, '/');
     });
+    return Promise.resolve(true);
   };
 
   CookieStorage.prototype.removeItems = function(keys) {
     var self = this;
-    return new Promise(function(resolve, reject) {
-      $.each(keys, function(i, key) {
-        docCookies.removeItem(self.pfx + ':' + key, '/');
-      });
-      resolve(true);
+    $.each(keys, function(i, key) {
+      docCookies.removeItem(self.pfx + ':' + key, '/');
     });
+    return Promise.resolve(true);
   };
 
   CookieStorage.prototype.getFirst = function(keys) {
@@ -94,7 +90,7 @@
           resolve(JSON.parse(v));
         }
       });
-      reject(new Error(self.pfx + ':' + key + ' not found in sessionStorage'));
+      reject(new Error('keys not found in cookies: ' + keys.join(', ')));
     });
   };
 
@@ -116,22 +112,18 @@
 
   SessionStorage.prototype.setItems = function(keys, value) {
     var self = this;
-    return new Promise(function(resolve, reject) {
-      $.each(keys, function(i, key) {
-        sessionStorage.setItem(self.pfx + ':' + key, JSON.stringify(value));
-      });
-      resolve(true);
+    $.each(keys, function(i, key) {
+      sessionStorage.setItem(self.pfx + ':' + key, JSON.stringify(value));
     });
+    return Promise.resolve(true);
   };
 
   SessionStorage.prototype.removeItems = function(keys) {
     var self = this;
-    return new Promise(function(resolve, reject) {
-      $.each(keys, function(i, key) {
-        sessionStorage.removeItem(self.pfx + ':' + key);
-      });
-      resolve(true);
+    $.each(keys, function(i, key) {
+      sessionStorage.removeItem(self.pfx + ':' + key);
     });
+    return Promise.resolve(true);
   };
 
   SessionStorage.prototype.getFirst = function(keys) {
@@ -143,7 +135,7 @@
           resolve(JSON.parse(v));
         }
       });
-      reject(new Error(self.pfx + ':' + key + ' not found in sessionStorage'));
+      reject(new Error('keys not found in sessionStorage: ' + keys.join(', ')));
     });
   };
 
@@ -295,28 +287,28 @@
   Api.prototype.read = function() {
     var self = this;
     var keys = parseAttribute(this.$element.attr('data-form-prefill-read'));
-    if (!keys.length) return;
+    if (!keys.length) return Promise.reject(new Error('Don’t know which keys to read from.'));
 
     prefixArray(this.getFormatPrefix(), keys);
 
+    var promisesRejected = 0;
     return new Promise(function(resolve, reject) {
       $.each(self.stores, function(i, store) {
         store.getFirst(keys).then(function(value) {
+          self.prefill(value);
           resolve(value);
-        }, function() {
-          // Swallow rejected promises from stores.
-        })
+        }, function(cause) {
+          // Reject only when all of the stores have rejected.
+          if (++promisesRejected == self.stores.length) reject(cause);
+        });
       });
-    }).then(function(value) {
-      self.prefill(value);
-      return value;
     });
   };
 
   Api.prototype.write = function(options) {
     var self = this;
     var keys = parseAttribute(this.$element.attr('data-form-prefill-write'));
-    if (!keys.length) return;
+    if (!keys.length) return Promise.reject(new Error('No idea which keys to write to.'));
 
     prefixArray(this.getFormatPrefix(), keys);
 
@@ -328,11 +320,7 @@
         promises.push(store.setItems(keys, self.getVal()));
       }
     });
-    return Promise.all(promises).then(function() {
-      // All fine.
-    }, function() {
-      // Swallow rejected promises from stores.
-    });
+    return Promise.all(promises);
   }
 
   Api.prototype.prefill = function(value) {
@@ -408,14 +396,14 @@
         writeAll: function() {
           $write = deduplicateSets($inputs);
           $write.each(function() {
-            $(this).data('formPrefill').write();
+            $(this).data('formPrefill').write().then(function() {}, function() {});
           });
         },
         removeAll: function(options) {
           options = options || {resetFields: true};
           $write = deduplicateSets($inputs);
           $write.each(function() {
-            $(this).data('formPrefill').write({delete: true});
+            $(this).data('formPrefill').write({delete: true}).then(function() {}, function() {});
           });
           if (options.resetFields) {
             $inputs.each(function() {
@@ -434,8 +422,10 @@
           var prefilled = [];
           $inputs.each(function() {
             var $el = $(this);
-            $el.data('formPrefill').read().then(function(value) {
+            $el.data('formPrefill').read().then(function() {
               $el.trigger('form-prefill:prefilled');
+            }, function(cause) {
+              $el.trigger('form-prefill:failed', cause);
             });
           });
         }
@@ -450,7 +440,7 @@
 
       // Write to stores on change
       $inputs.on('change.form-prefill', function() {
-        $(this).data('formPrefill').write();
+        $(this).data('formPrefill').write().then(function() {}, function() {});
       });
 
       // Write all on form submit
