@@ -104,6 +104,17 @@ QUnit.test( "readUrlVars: p:test (All parts starting with 'p:' should be removed
   }, 20);
 });
 
+QUnit.test( "readUrlVars: p:test=%C3%A4%C3%B6%3B%26%2F%40", function (assert) {
+  var self = this, done = assert.async();
+  var store = new Store();
+  setTimeout(function() {
+    var ret = self.privates.readUrlVars('p:test=%C3%A4%C3%B6%3B%26%2F%40', [store], self.settings);
+    assert.equal(store.data['s:test'], 'äö;&/@');
+    assert.equal(store.data['l:test'][0], 'äö;&/@');
+    done();
+  }, 20);
+});
+
 QUnit.module('SessionStorage', {
   before: function() {
     var privates = $.fn.formPrefill('privates');

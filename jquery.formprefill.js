@@ -218,7 +218,7 @@
           if (key.substr(0, 2) == 'p:') {
             key = key.substr(2);
           }
-          value = hashes[i].substring(p+1);
+          value = decodeURIComponent(hashes[i].substring(p+1));
             // Prepare values to be set as list values.
           if (!(key in vars)) {
             vars[key] = [];
