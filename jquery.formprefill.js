@@ -203,7 +203,16 @@
     if (!hash) {
       return '';
     }
+
     var vars = {}, key, value, p, parts, new_parts = [];
+
+    var pending = 0;
+    function promiseCompleted() {
+      pending--;
+      if (pending === 0)
+        $(document).trigger('hash-values-stored.form-prefill');
+    };
+
     parts = hash.split(';');
     for (var j = 0; j < parts.length; j++) {
       var part_has_prefill_vars = false;
@@ -226,7 +235,12 @@
           vars[key].push(value);
           // Set string values directly.
           $.each(stores, function(index, store) {
-            store.setItems([settings.stringPrefix + ':' + key], value);
+            pending++;
+            store.setItems([settings.stringPrefix + ':' + key], value).then(function() {
+              promiseCompleted();
+            }, function() {
+              promiseCompleted();
+            });
           });
         }
       }
@@ -238,7 +252,12 @@
     // Finally set all list values.
     $.each(stores, function(index, store) {
       $.each(vars, function(key, value) {
-        store.setItems([settings.listPrefix + ':' + key], value);
+        pending++;
+        store.setItems([settings.listPrefix + ':' + key], value).then(function() {
+          promiseCompleted();
+        }, function() {
+          promiseCompleted();
+        });
       });
     });
 
@@ -366,11 +385,12 @@
     }
     if (settings.useCookies) stores.push(new CookieStorage(settings.prefix));
 
-    var hash = window.location.hash.substr(1);
+    var hash = window.location.hash.substr(1), hashUsed = false;
     if (hash) {
       var newHash = readUrlVars(hash, stores, settings);
       if (newHash != hash) {
         window.location.hash = '#' + newHash;
+        hashUsed = true;
       }
     }
 
@@ -448,8 +468,15 @@
         $self.data('formPrefill').writeAll();
       });
 
-      // Prefill fields.
-      $self.data('formPrefill').readAll();
+      if (hashUsed) {
+        // Prefill fields when the values passed in the hash are stored.
+        $(document).on('hash-values-stored.form-prefill', function() {
+          $self.data('formPrefill').readAll();
+        });
+      } else {
+        // Prefill fields.
+        $self.data('formPrefill').readAll();
+      }
     });
   };
 
