@@ -96,6 +96,7 @@ Hash examples:
 | `stores`          | Array    | `[]`                          | An array of custom store instances. A store instance has to expose a `setItems`, a `removeItems`, and a `getFirst` method, each of which should return a Promise. This way your store could make an XHR request, resolving the promise and thus prefilling the form only when the data arrives.                                   |
 | `useSessionStore` | Boolean  | `true`                        | Save values in `sessionStorage`.                                                                                                                                                                                                                                                                                                  |
 | `useCookies`      | Boolean  | `false`                       | Save values in Cookies.                                                                                                                                                                                                                                                                                                           |
+| `cookieDomain`    | String   | `''`                          | The domain from which cookies can be accessed. Defaults to the current domain, not including (other) subdomains. |
 
 ## Events
 

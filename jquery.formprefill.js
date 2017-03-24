@@ -15,7 +15,8 @@
     listPrefix: 'l',
     stores: [],
     useSessionStore: true,
-    useCookies: false
+    useCookies: false,
+    cookieDomain: ''
   };
 
   var privates = {}; // Expose methods for testing.
@@ -61,14 +62,15 @@
     }
   };
 
-  var CookieStorage = privates.CookieStorage = function(pfx) {
+  var CookieStorage = privates.CookieStorage = function(pfx, domain) {
     this.pfx = pfx;
+    this.domain = domain;
   };
 
   CookieStorage.prototype.setItems = function(keys, value) {
     var self = this;
     $.each(keys, function(i, key) {
-      docCookies.setItem(self.pfx + ':' + key, JSON.stringify(value), Infinity, '/');
+      docCookies.setItem(self.pfx + ':' + key, JSON.stringify(value), Infinity, '/', self.domain);
     });
     return Promise.resolve(true);
   };
@@ -76,7 +78,7 @@
   CookieStorage.prototype.removeItems = function(keys) {
     var self = this;
     $.each(keys, function(i, key) {
-      docCookies.removeItem(self.pfx + ':' + key, '/');
+      docCookies.removeItem(self.pfx + ':' + key, '/', self.domain);
     });
     return Promise.resolve(true);
   };
@@ -383,7 +385,7 @@
       var s = new SessionStorage(settings.prefix);
       if (s.browserSupport()) stores.push(s);
     }
-    if (settings.useCookies) stores.push(new CookieStorage(settings.prefix));
+    if (settings.useCookies) stores.push(new CookieStorage(settings.prefix, settings.cookieDomain));
 
     var hash = window.location.hash.substr(1), hashUsed = false;
     if (hash) {
