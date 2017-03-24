@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>jquery.formprefill example</title>
+  </head>
+  <body>
+    <form>
+      <input type="text" data-form-prefill-keys="first_name"><br>
+      <input value="one" data-form-prefill-keys="foo" type="checkbox"><input checked value="two" data-form-prefill-keys="foo" type="checkbox"><input checked value="three" data-form-prefill-keys="foo" type="checkbox"><br>
+      <select multiple name="myform[personal_data][age]"><option value="1">one</option><option value="2">two</option><option value="3">three</option></select><br>
+      <input type="text">
+    </form>
+
+    <button id="clear">Clear stores</button>
+
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="jquery.formprefill.js"></script>
+    <script type="text/javascript">
+      $('#clear').click(function() {
+        $('#testform').data('formPrefill').removeAll();
+      });
+      $('form').on('form-prefill:prefilled', function(e) {
+        console.log('form-prefill:prefilled', e.target);
+      });
+      $('form').on('form-prefill:failed', function(e, data) {
+        console.log('form-prefill:failed', e.target, data);
+      });
+      $('form').on('form-prefill:cleared', function() {
+        console.log('form-prefill:cleared');
+      });
+      $('form').formPrefill();
+    </script>
+  </body>
+</html>
