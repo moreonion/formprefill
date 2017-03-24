@@ -38,6 +38,12 @@ QUnit.test('storageKeys: radios', function(assert) {
   assert.equal(r.write, 'foo');
 });
 
+QUnit.test('storageKeys: plain name without brackets', function(assert) {
+  var r = this.privates.storageKeys($('<input name="first_name" type="text">'));
+  assert.equal(r.read, 'first_name');
+  assert.equal(r.write, 'first_name');
+});
+
 QUnit.test( "readUrlVars: p:test=testval&p:test=testval2;somethingelse", function (assert) {
   var self = this, done = assert.async();
   var store = new Store();

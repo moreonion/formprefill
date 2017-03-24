@@ -149,7 +149,10 @@
       return undefined;
     var fragments = name.match(/\[[^\]]+\]/g) || [];
     if (!fragments.length || (type == 'checkbox' && fragments.length < 2))
-      return undefined;
+      return {
+        read: name,
+        write: name
+      };
     var suggestedFragment = (type == 'checkbox') ? fragments[fragments.length - 2] : fragments[fragments.length - 1];
     var key = suggestedFragment.match(/\[([^\]]+)\]/)[1];
     return {

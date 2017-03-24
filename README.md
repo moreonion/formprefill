@@ -26,6 +26,7 @@ For each field that you want to prefill or save you have to set the keys in the 
 
 <!-- If the data attributes are omitted the keys are parsed from the name attribute, using the last term in brackets by default. -->
 <input type="text" name="person[first_name]">
+<input type="text" name="first_name">
 ```
 
 In case you’re not in control of the markup, you can pass custom logic to set the keys for a field:
