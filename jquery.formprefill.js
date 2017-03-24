@@ -111,8 +111,8 @@
     // this is taken from modernizr.
     var mod = 'modernizr';
     try {
-      localStorage.setItem(mod, mod);
-      localStorage.removeItem(mod);
+      sessionStorage.setItem(mod, mod);
+      sessionStorage.removeItem(mod);
       return true;
     } catch(e) {
       return false;
