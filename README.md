@@ -1,5 +1,7 @@
 # Form prefill plugin for jQuery
 
+Built by [more onion](https://www.more-onion.com) as a part of [Campaignion](https://www.campaignion.org).
+
 ## Installation
 
 Pull in `jquery.formprefill.js` after jQuery.
