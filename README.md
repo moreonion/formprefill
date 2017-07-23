@@ -52,6 +52,8 @@ The form’s API is accesible via `$('form').data('formPrefill')`.
 $('form').data('formPrefill').readAll();
 
 // Write values to the stores for each field in the form:
+// Use this with caution: Depending on your exclusions this will also include unchanged default values
+// and hidden-fields used internally by your backend (ie. form tokens).
 $('form').data('formPrefill').writeAll();
 
 // Clear values from the stores for each field in the form and reset their values to what they were when the plugin was initialized:
@@ -103,7 +105,7 @@ Hash examples:
 
 ## Events
 
-By default, the stores are updated when fields fire the `change` event and when the form is submitted. You can remove these handlers: `$('form').find('*').off('.form-prefill')`.
+By default, the stores are updated when fields fire the `change` event. You can remove these handlers: `$('form').find('*').off('.form-prefill')`.
 
 When the plugin populates a field, it fires `form-prefill:prefilled` on the field.
 When it fails to retrieve a value for a field, it fires `form-prefill:failed` on the field, providing the cause as the second argument to the handler function.
