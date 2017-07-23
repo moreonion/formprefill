@@ -2,6 +2,7 @@ QUnit.module('Integration', {
   before: function() {
     this.$fixture = $('#qunit-fixture');
     this.$form = $('<form>').appendTo(this.$fixture);
+    this.$form2 = $('<form>').appendTo(this.$fixture);
   },
   after: function() {
     this.$fixture.empty();
@@ -11,9 +12,15 @@ QUnit.module('Integration', {
     .add('<input value="one" data-form-prefill-keys="foo" type="checkbox"><input checked value="two" data-form-prefill-keys="foo" type="checkbox"><input checked value="three" data-form-prefill-keys="foo" type="checkbox">')
     .add('<select multiple name="myform[personal_data][age][]"><option value="1">one</option><option value="2">two</option><option value="3">three</option></select>')
     .appendTo(this.$form);
+    // Similar for but with different defaults.
+    this.$fields2 = $('<input type="text" data-form-prefill-keys="first_name" value="first">')
+    .add('<input checked value="one" data-form-prefill-keys="foo" type="checkbox"><input value="two" data-form-prefill-keys="foo" type="checkbox"><input checked value="three" data-form-prefill-keys="foo" type="checkbox">')
+    .add('<select multiple name="myform[personal_data][age][]"><option selected value="1">one</option><option value="2">two</option><option value="3">three</option></select>')
+    .appendTo(this.$form2);
   },
   afterEach: function() {
     this.$form.empty();
+    this.$form2.empty();
   }
 });
 
@@ -100,5 +107,29 @@ QUnit.test('Read all values and trigger events for each field', function(assert)
     sessionStorage.removeItem('formPrefill:l:foo');
     sessionStorage.removeItem('formPrefill:l:age');
     done();
+  }, 100);
+});
+
+QUnit.test('Only changed values are stored by default', function(assert) {
+  var self = this,   done = assert.async();
+  this.$form.formPrefill();
+  this.$form.submit(function(event) { event.preventDefault(); });
+  this.$fields[1].checked = true;
+  // The change event triggers storing all checkbox values with the same name.
+  this.$fields.eq(1).trigger('change');
+  this.$fields.eq(4).val(['2']).trigger('change');
+  this.$form.trigger('submit');
+
+  this.$form2.formPrefill();
+  setTimeout(function() {
+    assert.equal(self.$fields2.eq(0).val(), 'first');
+    assert.equal(self.$fields2[1].checked, true);
+    assert.equal(self.$fields2[2].checked, true);
+    assert.equal(self.$fields2[3].checked, true);
+    assert.deepEqual(self.$fields2.eq(4).val(), ['2'])
+
+    sessionStorage.removeItem('formPrefill:s:first_name');
+    sessionStorage.removeItem('formPrefill:l:foo');
+    sessionStorage.removeItem('formPrefill:l:age');
   }, 100);
 });
