@@ -1,6 +1,6 @@
 /*
  * jquery.formprefill
- * Version 0.1.0
+ * Version 0.10.0
  *
  * https://github.com/moreonion/jquery.formprefill
  */
