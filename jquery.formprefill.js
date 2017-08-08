@@ -475,11 +475,6 @@
         $(this).data('formPrefill').write().then(function() {}, function() {});
       });
 
-      // Write all on form submit
-      $self.on('submit.form-prefill', function() {
-        $self.data('formPrefill').writeAll();
-      });
-
       if (hashUsed) {
         // Prefill fields when the values passed in the hash are stored.
         $(document).on('hash-values-stored.form-prefill', function() {
