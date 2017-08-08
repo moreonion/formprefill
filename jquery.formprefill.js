@@ -355,7 +355,7 @@
   }
 
   Api.prototype.prefill = function(value) {
-    this.$element.val(value);
+    this.$element.val(value).trigger('change');
   };
 
   Api.prototype.getVal = function() {
@@ -443,8 +443,9 @@
               var type = $field.attr('type');
               if (type == 'radio' || type == 'checkbox') {
                 $field[0].checked = api.initialValue;
+                $field.trigger('change');
               } else {
-                $field.val(api.initialValue);
+                $field.val(api.initialValue).trigger('change');
               }
             });
           }
