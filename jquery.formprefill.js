@@ -24,7 +24,8 @@
     useSessionStore: true,
     useLocalStore: false,
     useCookies: false,
-    cookieDomain: ''
+    cookieDomain: '',
+    cookieMaxAge: Infinity
   };
 
   var privates = {}; // Expose methods for testing.
@@ -70,15 +71,16 @@
     }
   };
 
-  var CookieStorage = privates.CookieStorage = function(pfx, domain) {
+  var CookieStorage = privates.CookieStorage = function(pfx, domain, maxAge) {
     this.pfx = pfx;
     this.domain = domain;
+    this.maxAge = maxAge;
   };
 
   CookieStorage.prototype.setItems = function(keys, value) {
     var self = this;
     $.each(keys, function(i, key) {
-      docCookies.setItem(self.pfx + ':' + key, JSON.stringify(value), Infinity, '/', self.domain);
+      docCookies.setItem(self.pfx + ':' + key, JSON.stringify(value), self.maxAge, '/', self.domain);
     });
     return Promise.resolve(true);
   };
@@ -401,7 +403,9 @@
       var s = new WebStorage(localStorage, settings.prefix);
       if (s.browserSupport()) stores.push(s);
     }
-    if (settings.useCookies) stores.push(new CookieStorage(settings.prefix, settings.cookieDomain));
+    if (settings.useCookies) {
+      stores.push(new CookieStorage(settings.prefix, settings.cookieDomain, settings.cookieMaxAge));
+    }
 
     var hash = window.location.hash.substr(1), hashUsed = false;
     if (hash) {
