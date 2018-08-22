@@ -76,7 +76,7 @@ QUnit.test('Remove all values and trigger event', function(assert) {
     assert.equal(sessionStorage.getItem('formPrefill:s:first_name'), '"Miranda"');
     assert.equal(sessionStorage.getItem('formPrefill:l:foo'), '["two","three"]');
     assert.equal(sessionStorage.getItem('formPrefill:l:age'), '["1"]');
-    self.$form.data('formPrefill').removeAll();
+    self.$form.data('formPrefill').removeAll({resetFields: false});
   }, 100);
   this.$form.on('form-prefill:cleared', function() {
     assert.equal(sessionStorage.getItem('formPrefill:s:first_name'), null);
@@ -131,5 +131,6 @@ QUnit.test('Only changed values are stored by default', function(assert) {
     sessionStorage.removeItem('formPrefill:s:first_name');
     sessionStorage.removeItem('formPrefill:l:foo');
     sessionStorage.removeItem('formPrefill:l:age');
+    done();
   }, 100);
 });
