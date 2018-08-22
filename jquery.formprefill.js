@@ -22,6 +22,7 @@
     listPrefix: 'l',
     stores: [],
     useSessionStore: true,
+    useLocalStore: false,
     useCookies: false,
     cookieDomain: ''
   };
@@ -103,48 +104,49 @@
     });
   };
 
-  var SessionStorage = privates.SessionStorage = function(pfx) {
+  var WebStorage = privates.WebStorage = function(type, pfx) {
+    this.storage = type;
     this.pfx = pfx;
   };
 
-  SessionStorage.prototype.browserSupport = function() {
+  WebStorage.prototype.browserSupport = function() {
     // this is taken from modernizr.
     var mod = 'modernizr';
     try {
-      sessionStorage.setItem(mod, mod);
-      sessionStorage.removeItem(mod);
+      this.storage.setItem(mod, mod);
+      this.storage.removeItem(mod);
       return true;
     } catch(e) {
       return false;
     }
   };
 
-  SessionStorage.prototype.setItems = function(keys, value) {
+  WebStorage.prototype.setItems = function(keys, value) {
     var self = this;
     $.each(keys, function(i, key) {
-      sessionStorage.setItem(self.pfx + ':' + key, JSON.stringify(value));
+      self.storage.setItem(self.pfx + ':' + key, JSON.stringify(value));
     });
     return Promise.resolve(true);
   };
 
-  SessionStorage.prototype.removeItems = function(keys) {
+  WebStorage.prototype.removeItems = function(keys) {
     var self = this;
     $.each(keys, function(i, key) {
-      sessionStorage.removeItem(self.pfx + ':' + key);
+      self.storage.removeItem(self.pfx + ':' + key);
     });
     return Promise.resolve(true);
   };
 
-  SessionStorage.prototype.getFirst = function(keys) {
+  WebStorage.prototype.getFirst = function(keys) {
     var self = this;
     return new Promise(function(resolve, reject) {
       $.each(keys, function(i, key) {
-        var v = sessionStorage.getItem(self.pfx + ':' + key);
+        var v = self.storage.getItem(self.pfx + ':' + key);
         if (v !== null) {
           resolve(JSON.parse(v));
         }
       });
-      reject(new Error('keys not found in sessionStorage: ' + keys.join(', ')));
+      reject(new Error('keys not found in storage: ' + keys.join(', ')));
     });
   };
 
@@ -392,7 +394,11 @@
 
     var stores = $.extend(true, [], settings.stores);
     if (settings.useSessionStore) {
-      var s = new SessionStorage(settings.prefix);
+      var s = new WebStorage(sessionStorage, settings.prefix);
+      if (s.browserSupport()) stores.push(s);
+    }
+    if (settings.useLocalStore) {
+      var s = new WebStorage(localStorage, settings.prefix);
       if (s.browserSupport()) stores.push(s);
     }
     if (settings.useCookies) stores.push(new CookieStorage(settings.prefix, settings.cookieDomain));
