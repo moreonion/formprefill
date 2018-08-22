@@ -80,7 +80,7 @@
   CookieStorage.prototype.setItems = function(keys, value) {
     var self = this;
     $.each(keys, function(i, key) {
-      docCookies.setItem(self.pfx + ':' + key, JSON.stringify(value), self.maxAge, '/', self.domain);
+      docCookies.setItem(self.pfx + ':' + key, JSON.stringify(value), self.maxAge, '/', self.domain, true);
     });
     return Promise.resolve(true);
   };
