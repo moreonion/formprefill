@@ -1,6 +1,6 @@
 {
   "name": "jquery.formprefill",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Form prefill plugin for jQuery.",
   "main": "jquery.formprefill.js",
   "directories": {
