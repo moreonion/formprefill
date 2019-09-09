@@ -106,6 +106,22 @@
     });
   };
 
+  var getStorage = privates.getStorage = function(storageName) {
+    if (['sessionStorage', 'localStorage'].indexOf(storageName) < 0) {
+      return null;
+    }
+    var storage;
+    try {
+      // when blocking 3rd party cookies trying to access the existing storage
+      // will throw an exception
+      // see https://bugs.chromium.org/p/chromium/issues/detail?id=357625
+      storage = window[storageName];
+    } catch (e) {
+      return null;
+    }
+    return storage;
+  }
+
   var WebStorage = privates.WebStorage = function(type, pfx) {
     this.storage = type;
     this.pfx = pfx;
@@ -396,12 +412,18 @@
 
     var stores = $.extend(true, [], settings.stores);
     if (settings.useSessionStore) {
-      var s = new WebStorage(sessionStorage, settings.prefix);
-      if (s.browserSupport()) stores.push(s);
+      var _sessionStorage = getStorage("sessionStorage");
+      if (_sessionStorage) {
+        var s = new WebStorage(_sessionStorage, settings.prefix);
+        if (s.browserSupport()) stores.push(s);
+      }
     }
     if (settings.useLocalStore) {
-      var s = new WebStorage(localStorage, settings.prefix);
-      if (s.browserSupport()) stores.push(s);
+      var _localStorage = getStorage("localStorage");
+      if (_localStorage) {
+        var s = new WebStorage(_localStorage, settings.prefix);
+        if (s.browserSupport()) stores.push(s);
+      }
     }
     if (settings.useCookies) {
       stores.push(new CookieStorage(settings.prefix, settings.cookieDomain, settings.cookieMaxAge));
