@@ -1,5 +1,5 @@
 {
-  "name": "jquery.formprefill",
+  "name": "@moreonion/jquery.formprefill",
   "version": "0.11.0",
   "description": "Form prefill plugin for jQuery.",
   "main": "jquery.formprefill.js",
@@ -21,5 +21,8 @@
   "bugs": {
     "url": "https://github.com/moreonion/jquery.formprefill/issues"
   },
-  "homepage": "https://github.com/moreonion/jquery.formprefill#readme"
+  "homepage": "https://github.com/moreonion/jquery.formprefill#readme",
+  "publishConfig": {
+    "access": "public"
+  }
 }
