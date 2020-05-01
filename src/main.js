@@ -1,7 +1,7 @@
 /* global jQuery */
 
 import { cookies } from './cookies'
-import { CookieStorage, WebStorage } from './storage'
+import { WebStorage, Stores } from './storage'
 
 (function ($) {
   var defaults = {
@@ -25,24 +25,10 @@ import { CookieStorage, WebStorage } from './storage'
     cookieMaxAge: Infinity
   }
 
-  var privates = {} // Expose methods for testing.
-
-  var getStorage = privates.getStorage = function (storageName) {
-    if (['sessionStorage', 'localStorage'].indexOf(storageName) < 0) {
-      return null
-    }
-    var storage
-    try {
-      // when blocking 3rd party cookies trying to access the existing storage
-      // will throw an exception
-      // see https://bugs.chromium.org/p/chromium/issues/detail?id=357625
-      storage = window[storageName]
-    }
-    catch (e) {
-      return null
-    }
-    return storage
-  }
+  var privates = {
+    WebStorage: WebStorage,
+    Stores: Stores,
+  } // Expose methods for testing.
 
   // Util methods:
 
@@ -109,21 +95,13 @@ import { CookieStorage, WebStorage } from './storage'
   // separator. Each part that contains prefill variables (with the "p:"-prefix)
   // is then removed.
   // All prefill-values are stored into the stores in string and list format.
-  var readUrlVars = privates.readUrlVars = function (hash, stores, settings) {
+  var readUrlVars = privates.readUrlVars = function (hash, stores) {
     hash = hash || window.location.hash.substr(1)
     if (!hash) {
       return ''
     }
 
     var vars = {}; var key; var value; var p; var parts; var newParts = []
-
-    var pending = 0
-    function promiseCompleted () {
-      pending--
-      if (pending === 0) {
-        $(document).trigger('hash-values-stored.form-prefill')
-      }
-    };
 
     parts = hash.split(';')
     for (var j = 0; j < parts.length; j++) {
@@ -144,15 +122,6 @@ import { CookieStorage, WebStorage } from './storage'
             vars[key] = []
           }
           vars[key].push(value)
-          // Set string values directly.
-          $.each(stores, function (index, store) {
-            pending++
-            store.setItems([settings.stringPrefix + ':' + key], value).then(function () {
-              promiseCompleted()
-            }, function () {
-              promiseCompleted()
-            })
-          })
         }
       }
       else {
@@ -160,16 +129,8 @@ import { CookieStorage, WebStorage } from './storage'
       }
     }
 
-    // Finally set all list values.
-    $.each(stores, function (index, store) {
-      $.each(vars, function (key, value) {
-        pending++
-        store.setItems([settings.listPrefix + ':' + key], value).then(function () {
-          promiseCompleted()
-        }, function () {
-          promiseCompleted()
-        })
-      })
+    stores.setValuesMap(vars).finally(function () {
+      $(document).trigger('hash-values-stored.form-prefill')
     })
 
     return newParts.join(';')
@@ -216,43 +177,28 @@ import { CookieStorage, WebStorage } from './storage'
   }
 
   Api.prototype.read = function () {
-    var self = this
     var keys = parseAttribute(this.$element.attr('data-form-prefill-read'))
     if (!keys.length) return Promise.reject(new Error('Don’t know which keys to read from.'))
 
     prefixArray(this.getFormatPrefix(), keys)
 
-    var promisesRejected = 0
-    return new Promise(function (resolve, reject) {
-      $.each(self.stores, function (i, store) {
-        store.getFirst(keys).then(function (value) {
-          self.prefill(value)
-          resolve(value)
-        }, function (cause) {
-          // Reject only when all of the stores have rejected.
-          if (++promisesRejected === self.stores.length) reject(cause)
-        })
-      })
+    return this.stores.getFirst(keys).then((value) => {
+      this.prefill(value)
     })
   }
 
   Api.prototype.write = function (options) {
-    var self = this
     var keys = parseAttribute(this.$element.attr('data-form-prefill-write'))
     if (!keys.length) return Promise.reject(new Error('No idea which keys to write to.'))
 
     prefixArray(this.getFormatPrefix(), keys)
 
-    var promises = []
-    $.each(self.stores, function (i, store) {
-      if (options && options.delete === true) {
-        promises.push(store.removeItems(keys))
-      }
-      else {
-        promises.push(store.setItems(keys, self.getVal()))
-      }
-    })
-    return Promise.all(promises)
+    if (options && options.delete === true) {
+      return this.stores.removeItems(keys)
+    }
+    else {
+      return this.stores.setItems(keys, this.getVal())
+    }
   }
 
   Api.prototype.prefill = function (value) {
@@ -291,25 +237,7 @@ import { CookieStorage, WebStorage } from './storage'
 
     var settings = $.extend(defaults, options)
 
-    var stores = $.extend(true, [], settings.stores)
-    var s
-    if (settings.useSessionStore) {
-      var _sessionStorage = getStorage('sessionStorage')
-      if (_sessionStorage) {
-        s = new WebStorage(_sessionStorage, settings.prefix)
-        if (s.browserSupport()) stores.push(s)
-      }
-    }
-    if (settings.useLocalStore) {
-      var _localStorage = getStorage('localStorage')
-      if (_localStorage) {
-        s = new WebStorage(_localStorage, settings.prefix)
-        if (s.browserSupport()) stores.push(s)
-      }
-    }
-    if (settings.useCookies) {
-      stores.push(new CookieStorage(settings.prefix, settings.cookieDomain, settings.cookieMaxAge))
-    }
+    var stores = Stores.fromSettings(settings)
 
     var hash = window.location.hash.substr(1); var hashUsed = false
     if (hash) {

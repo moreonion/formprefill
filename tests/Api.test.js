@@ -1,6 +1,7 @@
 QUnit.module('Api', {
   before: function() {
-    this.Api = $.fn.formPrefill('privates').Api;
+    this.privates = $.fn.formPrefill('privates');
+    this.Api = this.privates.Api;
     this.$fixture = $('#qunit-fixture');
     this.$form = $('<form>').appendTo(this.$fixture);
   },
@@ -57,7 +58,7 @@ QUnit.test('read', function(assert) {
   var done = assert.async();
   var store1 = new Store(), store2 = new Store();
   var $input = $('<input type="text" data-form-prefill-read="foo bar">').appendTo(this.$form);
-  var api = new this.Api($input, [store1, store2]);
+  var api = new this.Api($input, this.privates.Stores.fromSettings({stores: [store1, store2]}));
   store2.setItems(['s:bar'], 'baz');
   api.read().then(function(value) {
     assert.equal($input.val(), 'baz');
@@ -69,7 +70,7 @@ QUnit.test('write', function(assert) {
   var done = assert.async();
   var store1 = new Store(), store2 = new Store();
   var $input = $('<input type="text" data-form-prefill-write="foo bar">').val('baz').appendTo(this.$form);
-  var api = new this.Api($input, [store1, store2]);
+  var api = new this.Api($input, this.privates.Stores.fromSettings({stores: [store1, store2]}));
   api.write().then(function() {
     assert.equal(store1.data['s:foo'], 'baz');
     assert.equal(store1.data['s:bar'], 'baz');

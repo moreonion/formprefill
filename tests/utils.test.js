@@ -47,8 +47,9 @@ QUnit.test('storageKeys: plain name without brackets', function(assert) {
 QUnit.test( "readUrlVars: p:test=testval&p:test=testval2;somethingelse", function (assert) {
   var self = this, done = assert.async();
   var store = new Store();
+  var stores = this.privates.Stores.fromSettings($.extend({stores: [store]}, self.settings));
   setTimeout(function() {
-    var ret = self.privates.readUrlVars('p:test=testval&p:test=testval2;somethingelse', [store], self.settings);
+    var ret = self.privates.readUrlVars('p:test=testval&p:test=testval2;somethingelse', stores);
     assert.equal(ret, 'somethingelse');
     assert.equal(store.data['s:test'], 'testval2');
     assert.deepEqual(store.data['l:test'], ['testval', 'testval2']);
@@ -59,8 +60,9 @@ QUnit.test( "readUrlVars: p:test=testval&p:test=testval2;somethingelse", functio
 QUnit.test( "readUrlVars: p:test=testval&test=testval2;somethingelse", function (assert) {
   var self = this, done = assert.async();
   var store = new Store();
+  var stores = this.privates.Stores.fromSettings($.extend({stores: [store]}, self.settings));
   setTimeout(function() {
-    var ret = self.privates.readUrlVars('p:test=testval&test=testval2;somethingelse', [store], self.settings);
+    var ret = self.privates.readUrlVars('p:test=testval&test=testval2;somethingelse', stores);
     assert.equal(ret, 'somethingelse');
     assert.equal(store.data['s:test'], 'testval2');
     assert.deepEqual(store.data['l:test'], ['testval', 'testval2']);
@@ -71,8 +73,9 @@ QUnit.test( "readUrlVars: p:test=testval&test=testval2;somethingelse", function 
 QUnit.test( "readUrlVars: p:test (All parts starting with 'p:' should be removed)", function (assert) {
   var self = this, done = assert.async();
   var store = new Store();
+  var stores = this.privates.Stores.fromSettings($.extend({stores: [store]}, self.settings));
   setTimeout(function() {
-    var ret = self.privates.readUrlVars('p:test', [store], self.settings);
+    var ret = self.privates.readUrlVars('p:test', stores);
     assert.equal(ret, '');
     done();
   }, 20);
@@ -81,8 +84,9 @@ QUnit.test( "readUrlVars: p:test (All parts starting with 'p:' should be removed
 QUnit.test( "readUrlVars: p:test=%C3%A4%C3%B6%3B%26%2F%40", function (assert) {
   var self = this, done = assert.async();
   var store = new Store();
+  var stores = this.privates.Stores.fromSettings($.extend({stores: [store]}, self.settings));
   setTimeout(function() {
-    var ret = self.privates.readUrlVars('p:test=%C3%A4%C3%B6%3B%26%2F%40', [store], self.settings);
+    var ret = self.privates.readUrlVars('p:test=%C3%A4%C3%B6%3B%26%2F%40', stores);
     assert.equal(store.data['s:test'], 'äö;&/@');
     assert.equal(store.data['l:test'][0], 'äö;&/@');
     done();
