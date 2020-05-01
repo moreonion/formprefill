@@ -1,6 +1,7 @@
 /* global jQuery */
 
 import { cookies } from './cookies'
+import { CookieStorage, WebStorage } from './storage'
 
 (function ($) {
   var defaults = {
@@ -26,44 +27,6 @@ import { cookies } from './cookies'
 
   var privates = {} // Expose methods for testing.
 
-  /* Cookie api taken from https://github.com/madmurphy/cookies.js, released under GNU Public License, version 3 or later */
-  const docCookies = privates.docCookies = cookies
-
-  var CookieStorage = privates.CookieStorage = function (pfx, domain, maxAge) {
-    this.pfx = pfx
-    this.domain = domain
-    this.maxAge = maxAge
-  }
-
-  CookieStorage.prototype.setItems = function (keys, value) {
-    var self = this
-    $.each(keys, function (i, key) {
-      docCookies.setItem(self.pfx + ':' + key, JSON.stringify(value), self.maxAge, '/', self.domain, true)
-    })
-    return Promise.resolve(true)
-  }
-
-  CookieStorage.prototype.removeItems = function (keys) {
-    var self = this
-    $.each(keys, function (i, key) {
-      docCookies.removeItem(self.pfx + ':' + key, '/', self.domain)
-    })
-    return Promise.resolve(true)
-  }
-
-  CookieStorage.prototype.getFirst = function (keys) {
-    var self = this
-    return new Promise(function (resolve, reject) {
-      $.each(keys, function (i, key) {
-        var v = docCookies.getItem(self.pfx + ':' + key)
-        if (v !== null) {
-          resolve(JSON.parse(v))
-        }
-      })
-      reject(new Error('keys not found in cookies: ' + keys.join(', ')))
-    })
-  }
-
   var getStorage = privates.getStorage = function (storageName) {
     if (['sessionStorage', 'localStorage'].indexOf(storageName) < 0) {
       return null
@@ -79,53 +42,6 @@ import { cookies } from './cookies'
       return null
     }
     return storage
-  }
-
-  var WebStorage = privates.WebStorage = function (type, pfx) {
-    this.storage = type
-    this.pfx = pfx
-  }
-
-  WebStorage.prototype.browserSupport = function () {
-    // this is taken from modernizr.
-    var mod = 'modernizr'
-    try {
-      this.storage.setItem(mod, mod)
-      this.storage.removeItem(mod)
-      return true
-    }
-    catch (e) {
-      return false
-    }
-  }
-
-  WebStorage.prototype.setItems = function (keys, value) {
-    var self = this
-    $.each(keys, function (i, key) {
-      self.storage.setItem(self.pfx + ':' + key, JSON.stringify(value))
-    })
-    return Promise.resolve(true)
-  }
-
-  WebStorage.prototype.removeItems = function (keys) {
-    var self = this
-    $.each(keys, function (i, key) {
-      self.storage.removeItem(self.pfx + ':' + key)
-    })
-    return Promise.resolve(true)
-  }
-
-  WebStorage.prototype.getFirst = function (keys) {
-    var self = this
-    return new Promise(function (resolve, reject) {
-      $.each(keys, function (i, key) {
-        var v = self.storage.getItem(self.pfx + ':' + key)
-        if (v !== null) {
-          resolve(JSON.parse(v))
-        }
-      })
-      reject(new Error('keys not found in storage: ' + keys.join(', ')))
-    })
   }
 
   // Util methods:
