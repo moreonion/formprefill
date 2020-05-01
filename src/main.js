@@ -132,8 +132,6 @@ import { WebStorage, Stores } from './storage'
 
   var Api = privates.Api = function ($e, stores, settings) {
     settings = settings || $.extend({}, defaults)
-    this.stringPrefix = settings.stringPrefix
-    this.listPrefix = settings.listPrefix
     this.$element = $e
     this.stores = stores
     var type = $e.attr('type')
@@ -219,6 +217,17 @@ import { WebStorage, Stores } from './storage'
     return type === 'checkbox' || type === 'radio' || this.$element.is('select[multiple]')
   }
 
+  $(document).on('form-prefill:stores-initialized', function (event, stores) {
+    var hash = window.location.hash.substr(1)
+    if (hash) {
+      var newHash = readUrlVars(hash, stores)
+      if (newHash !== hash) {
+        window.location.hash = '#' + newHash
+      }
+    }
+    $(document).trigger('form-prefill:stores-filled', [stores])
+  })
+
   $.fn.formPrefill = function (options) {
     // Make private methods testable.
     if (options === 'privates') {
@@ -229,15 +238,6 @@ import { WebStorage, Stores } from './storage'
 
     var stores = privates.stores = Stores.fromSettings(settings)
     $(document).trigger('form-prefill:stores-initialized', [stores])
-
-    var hash = window.location.hash.substr(1); var hashUsed = false
-    if (hash) {
-      var newHash = readUrlVars(hash, stores, settings)
-      if (newHash !== hash) {
-        window.location.hash = '#' + newHash
-        hashUsed = true
-      }
-    }
 
     return this.each(function () {
       var $self = $(this)
@@ -310,16 +310,12 @@ import { WebStorage, Stores } from './storage'
         $(this).data('formPrefill').write().then(function () {}, function () {})
       })
 
-      if (hashUsed) {
-        // Prefill fields when the values passed in the hash are stored.
-        $(document).on('hash-values-stored.form-prefill', function () {
-          $self.data('formPrefill').readAll()
-        })
-      }
-      else {
-        // Prefill fields.
+      // Prefill fields when the values passed in the hash are stored.
+      $(document).on('form-prefill:stores-filled', function () {
         $self.data('formPrefill').readAll()
-      }
+      })
+      // Prefill fields.
+      $self.data('formPrefill').readAll()
     })
   }
 }(jQuery))
