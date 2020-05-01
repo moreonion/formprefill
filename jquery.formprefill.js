@@ -1,18 +1,131 @@
-/*
- * jquery.formprefill
- * Version 0.10.0
- *
- * https://github.com/moreonion/jquery.formprefill
- */
+// modules are defined as an array
+// [ module function, map of requires ]
+//
+// map of requires is short require name -> numeric require
+//
+// anything defined in a previous bundle is accessed via the
+// orig method which is the require for previous bundles
+parcelRequire = (function (modules, cache, entry, globalName) {
+  // Save the require from previous bundle to this closure if any
+  var previousRequire = typeof parcelRequire === 'function' && parcelRequire;
+  var nodeRequire = typeof require === 'function' && require;
 
-(function( $ ) {
+  function newRequire(name, jumped) {
+    if (!cache[name]) {
+      if (!modules[name]) {
+        // if we cannot find the module within our internal map or
+        // cache jump to the current global require ie. the last bundle
+        // that was added to the page.
+        var currentRequire = typeof parcelRequire === 'function' && parcelRequire;
+        if (!jumped && currentRequire) {
+          return currentRequire(name, true);
+        }
 
+        // If there are other bundles on this page the require from the
+        // previous one is saved to 'previousRequire'. Repeat this as
+        // many times as there are bundles until the module is found or
+        // we exhaust the require chain.
+        if (previousRequire) {
+          return previousRequire(name, true);
+        }
+
+        // Try the node require function if it exists.
+        if (nodeRequire && typeof name === 'string') {
+          return nodeRequire(name);
+        }
+
+        var err = new Error('Cannot find module \'' + name + '\'');
+        err.code = 'MODULE_NOT_FOUND';
+        throw err;
+      }
+
+      localRequire.resolve = resolve;
+      localRequire.cache = {};
+
+      var module = cache[name] = new newRequire.Module(name);
+
+      modules[name][0].call(module.exports, localRequire, module, module.exports, this);
+    }
+
+    return cache[name].exports;
+
+    function localRequire(x){
+      return newRequire(localRequire.resolve(x));
+    }
+
+    function resolve(x){
+      return modules[name][1][x] || x;
+    }
+  }
+
+  function Module(moduleName) {
+    this.id = moduleName;
+    this.bundle = newRequire;
+    this.exports = {};
+  }
+
+  newRequire.isParcelRequire = true;
+  newRequire.Module = Module;
+  newRequire.modules = modules;
+  newRequire.cache = cache;
+  newRequire.parent = previousRequire;
+  newRequire.register = function (id, exports) {
+    modules[id] = [function (require, module) {
+      module.exports = exports;
+    }, {}];
+  };
+
+  var error;
+  for (var i = 0; i < entry.length; i++) {
+    try {
+      newRequire(entry[i]);
+    } catch (e) {
+      // Save first error but execute all entries
+      if (!error) {
+        error = e;
+      }
+    }
+  }
+
+  if (entry.length) {
+    // Expose entry point to Node, AMD or browser globals
+    // Based on https://github.com/ForbesLindesay/umd/blob/master/template.js
+    var mainExports = newRequire(entry[entry.length - 1]);
+
+    // CommonJS
+    if (typeof exports === "object" && typeof module !== "undefined") {
+      module.exports = mainExports;
+
+    // RequireJS
+    } else if (typeof define === "function" && define.amd) {
+     define(function () {
+       return mainExports;
+     });
+
+    // <script>
+    } else if (globalName) {
+      this[globalName] = mainExports;
+    }
+  }
+
+  // Override the current require with this new one
+  parcelRequire = newRequire;
+
+  if (error) {
+    // throw error from earlier, _after updating parcelRequire_
+    throw error;
+  }
+
+  return newRequire;
+})({"epB2":[function(require,module,exports) {
+/* global jQuery */
+(function ($) {
   var defaults = {
     prefix: 'formPrefill',
-    storageKeys: function() {
+    storageKeys: function storageKeys() {
       return {
-        read: "key",
-        write: "key"
+        read: 'key',
+        write: 'key'
       };
     },
     map: {},
@@ -27,77 +140,98 @@
     cookieDomain: '',
     cookieMaxAge: Infinity
   };
-
   var privates = {}; // Expose methods for testing.
 
   /* Cookie api taken from https://github.com/madmurphy/cookies.js, released under GNU Public License, version 3 or later */
+
   var docCookies = privates.docCookies = {
-    getItem: function (sKey) {
-      if (!sKey) { return null; }
-      return decodeURIComponent(document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*([^;]*).*$)|^.*$"), "$1")) || null;
+    getItem: function getItem(sKey) {
+      if (!sKey) {
+        return null;
+      }
+
+      return decodeURIComponent(document.cookie.replace(new RegExp('(?:(?:^|.*;)\\s*' + encodeURIComponent(sKey).replace(/[-.+*]/g, '\\$&') + '\\s*\\=\\s*([^;]*).*$)|^.*$'), '$1')) || null;
     },
-    setItem: function (sKey, sValue, vEnd, sPath, sDomain, bSecure) {
-      if (!sKey || /^(?:expires|max\-age|path|domain|secure)$/i.test(sKey)) { return false; }
-      var sExpires = "";
+    setItem: function setItem(sKey, sValue, vEnd, sPath, sDomain, bSecure) {
+      if (!sKey || /^(?:expires|max-age|path|domain|secure)$/i.test(sKey)) {
+        return false;
+      }
+
+      var sExpires = '';
+
       if (vEnd) {
         switch (vEnd.constructor) {
           case Number:
-            sExpires = vEnd === Infinity ? "; expires=Fri, 31 Dec 9999 23:59:59 GMT" : "; max-age=" + vEnd;
+            sExpires = vEnd === Infinity ? '; expires=Fri, 31 Dec 9999 23:59:59 GMT' : '; max-age=' + vEnd;
             break;
+
           case String:
-            sExpires = "; expires=" + vEnd;
+            sExpires = '; expires=' + vEnd;
             break;
+
           case Date:
-            sExpires = "; expires=" + vEnd.toUTCString();
+            sExpires = '; expires=' + vEnd.toUTCString();
             break;
         }
       }
-      document.cookie = encodeURIComponent(sKey) + "=" + encodeURIComponent(sValue) + sExpires + (sDomain ? "; domain=" + sDomain : "") + (sPath ? "; path=" + sPath : "") + (bSecure ? "; secure" : "");
+
+      document.cookie = encodeURIComponent(sKey) + '=' + encodeURIComponent(sValue) + sExpires + (sDomain ? '; domain=' + sDomain : '') + (sPath ? '; path=' + sPath : '') + (bSecure ? '; secure' : '');
       return true;
     },
-    removeItem: function (sKey, sPath, sDomain) {
-      if (!this.hasItem(sKey)) { return false; }
-      document.cookie = encodeURIComponent(sKey) + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT" + (sDomain ? "; domain=" + sDomain : "") + (sPath ? "; path=" + sPath : "");
+    removeItem: function removeItem(sKey, sPath, sDomain) {
+      if (!this.hasItem(sKey)) {
+        return false;
+      }
+
+      document.cookie = encodeURIComponent(sKey) + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT' + (sDomain ? '; domain=' + sDomain : '') + (sPath ? '; path=' + sPath : '');
       return true;
     },
-    hasItem: function (sKey) {
-      if (!sKey) { return false; }
-      return (new RegExp("(?:^|;\\s*)" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=")).test(document.cookie);
+    hasItem: function hasItem(sKey) {
+      if (!sKey) {
+        return false;
+      }
+
+      return new RegExp('(?:^|;\\s*)' + encodeURIComponent(sKey).replace(/[-.+*]/g, '\\$&') + '\\s*\\=').test(document.cookie);
     },
-    keys: function () {
-      var aKeys = document.cookie.replace(/((?:^|\s*;)[^\=]+)(?=;|$)|^\s*|\s*(?:\=[^;]*)?(?:\1|$)/g, "").split(/\s*(?:\=[^;]*)?;\s*/);
-      for (var nLen = aKeys.length, nIdx = 0; nIdx < nLen; nIdx++) { aKeys[nIdx] = decodeURIComponent(aKeys[nIdx]); }
+    keys: function keys() {
+      var aKeys = document.cookie.replace(/((?:^|\s*;)[^=]+)(?=;|$)|^\s*|\s*(?:=[^;]*)?(?:\1|$)/g, '').split(/\s*(?:=[^;]*)?;\s*/);
+
+      for (var nLen = aKeys.length, nIdx = 0; nIdx < nLen; nIdx++) {
+        aKeys[nIdx] = decodeURIComponent(aKeys[nIdx]);
+      }
+
       return aKeys;
     }
   };
 
-  var CookieStorage = privates.CookieStorage = function(pfx, domain, maxAge) {
+  var CookieStorage = privates.CookieStorage = function (pfx, domain, maxAge) {
     this.pfx = pfx;
     this.domain = domain;
     this.maxAge = maxAge;
   };
 
-  CookieStorage.prototype.setItems = function(keys, value) {
+  CookieStorage.prototype.setItems = function (keys, value) {
     var self = this;
-    $.each(keys, function(i, key) {
+    $.each(keys, function (i, key) {
       docCookies.setItem(self.pfx + ':' + key, JSON.stringify(value), self.maxAge, '/', self.domain, true);
     });
     return Promise.resolve(true);
   };
 
-  CookieStorage.prototype.removeItems = function(keys) {
+  CookieStorage.prototype.removeItems = function (keys) {
     var self = this;
-    $.each(keys, function(i, key) {
+    $.each(keys, function (i, key) {
       docCookies.removeItem(self.pfx + ':' + key, '/', self.domain);
     });
     return Promise.resolve(true);
   };
 
-  CookieStorage.prototype.getFirst = function(keys) {
+  CookieStorage.prototype.getFirst = function (keys) {
     var self = this;
-    return new Promise(function(resolve, reject) {
-      $.each(keys, function(i, key) {
+    return new Promise(function (resolve, reject) {
+      $.each(keys, function (i, key) {
         var v = docCookies.getItem(self.pfx + ':' + key);
+
         if (v !== null) {
           resolve(JSON.parse(v));
         }
@@ -106,11 +240,13 @@
     });
   };
 
-  var getStorage = privates.getStorage = function(storageName) {
+  var getStorage = privates.getStorage = function (storageName) {
     if (['sessionStorage', 'localStorage'].indexOf(storageName) < 0) {
       return null;
     }
+
     var storage;
+
     try {
       // when blocking 3rd party cookies trying to access the existing storage
       // will throw an exception
@@ -119,101 +255,111 @@
     } catch (e) {
       return null;
     }
-    return storage;
-  }
 
-  var WebStorage = privates.WebStorage = function(type, pfx) {
+    return storage;
+  };
+
+  var WebStorage = privates.WebStorage = function (type, pfx) {
     this.storage = type;
     this.pfx = pfx;
   };
 
-  WebStorage.prototype.browserSupport = function() {
+  WebStorage.prototype.browserSupport = function () {
     // this is taken from modernizr.
     var mod = 'modernizr';
+
     try {
       this.storage.setItem(mod, mod);
       this.storage.removeItem(mod);
       return true;
-    } catch(e) {
+    } catch (e) {
       return false;
     }
   };
 
-  WebStorage.prototype.setItems = function(keys, value) {
+  WebStorage.prototype.setItems = function (keys, value) {
     var self = this;
-    $.each(keys, function(i, key) {
+    $.each(keys, function (i, key) {
       self.storage.setItem(self.pfx + ':' + key, JSON.stringify(value));
     });
     return Promise.resolve(true);
   };
 
-  WebStorage.prototype.removeItems = function(keys) {
+  WebStorage.prototype.removeItems = function (keys) {
     var self = this;
-    $.each(keys, function(i, key) {
+    $.each(keys, function (i, key) {
       self.storage.removeItem(self.pfx + ':' + key);
     });
     return Promise.resolve(true);
   };
 
-  WebStorage.prototype.getFirst = function(keys) {
+  WebStorage.prototype.getFirst = function (keys) {
     var self = this;
-    return new Promise(function(resolve, reject) {
-      $.each(keys, function(i, key) {
+    return new Promise(function (resolve, reject) {
+      $.each(keys, function (i, key) {
         var v = self.storage.getItem(self.pfx + ':' + key);
+
         if (v !== null) {
           resolve(JSON.parse(v));
         }
       });
       reject(new Error('keys not found in storage: ' + keys.join(', ')));
     });
-  };
+  }; // Util methods:
 
-  // Util methods:
 
-  defaults.storageKeys = privates.storageKeys = function($e) {
-    var type = $e.attr('type'), name = $e.attr('name');
-    if (!name)
+  defaults.storageKeys = privates.storageKeys = function ($e) {
+    var type = $e.attr('type');
+    var name = $e.attr('name');
+
+    if (!name) {
       return undefined;
+    }
+
     var fragments = name.match(/\[[^\]]+\]/g) || [];
-    if (!fragments.length || (type == 'checkbox' && fragments.length < 2))
+
+    if (!fragments.length || type === 'checkbox' && fragments.length < 2) {
       return {
         read: name,
         write: name
       };
-    var suggestedFragment = (type == 'checkbox') ? fragments[fragments.length - 2] : fragments[fragments.length - 1];
+    }
+
+    var suggestedFragment = type === 'checkbox' ? fragments[fragments.length - 2] : fragments[fragments.length - 1];
     var key = suggestedFragment.match(/\[([^\]]+)\]/)[1];
     return {
       read: key,
       write: key
     };
-  }
+  };
 
-  var parseAttribute = privates.parseAttribute = function(str) {
+  var parseAttribute = privates.parseAttribute = function (str) {
     if ($.isArray(str)) return str;
     if (typeof str === 'string' && str) return str.split(' ');
     return [];
   };
 
-  var serializeAttribute = privates.serializeAttribute = function(arr) {
+  var serializeAttribute = privates.serializeAttribute = function (arr) {
     if (typeof arr === 'string') return arr;
     if ($.isArray(arr)) return arr.join(' ');
     return '';
   };
 
-  var prefixArray = privates.prefixArray = function(prefix, arr) {
+  var prefixArray = privates.prefixArray = function (prefix, arr) {
     for (var i = 0, j = arr.length; i < j; i++) {
       arr[i] = prefix + ':' + arr[i];
     }
   };
 
-  var deduplicateSets = privates.deduplicateSets = function($els) {
+  var deduplicateSets = privates.deduplicateSets = function ($els) {
     // Remove all but one from each set of checkboxes or radios with the same
     // write attribute to prevent multiple writes to the stores.
     var sets = [];
-    return $els.filter(function() {
+    return $els.filter(function () {
       var keys = $(this).attr('data-form-prefill-write');
       var type = $(this).attr('type');
-      if (type == 'checkbox' || type == 'radio') {
+
+      if (type === 'checkbox' || type === 'radio') {
         if (sets.indexOf(keys) === -1) {
           sets.push(keys);
           return true;
@@ -221,95 +367,107 @@
           return false;
         }
       }
+
       return true;
     });
-  };
-
-  // Parse the hash from the hash string and clean them from the string.
+  }; // Parse the hash from the hash string and clean them from the string.
   // The hash string is first split into parts using a semi-colon";" as a
   // separator. Each part that contains prefill variables (with the "p:"-prefix)
   // is then removed.
   // All prefill-values are stored into the stores in string and list format.
-  var readUrlVars = privates.readUrlVars = function(hash, stores, settings) {
+
+
+  var readUrlVars = privates.readUrlVars = function (hash, stores, settings) {
     hash = hash || window.location.hash.substr(1);
+
     if (!hash) {
       return '';
     }
 
-    var vars = {}, key, value, p, parts, new_parts = [];
-
+    var vars = {};
+    var key;
+    var value;
+    var p;
+    var parts;
+    var newParts = [];
     var pending = 0;
+
     function promiseCompleted() {
       pending--;
-      if (pending === 0)
-        $(document).trigger('hash-values-stored.form-prefill');
-    };
 
+      if (pending === 0) {
+        $(document).trigger('hash-values-stored.form-prefill');
+      }
+    }
+
+    ;
     parts = hash.split(';');
+
     for (var j = 0; j < parts.length; j++) {
-      var part_has_prefill_vars = false;
-      var part = parts[j];
-      // Parts starting with p: are used for pre-filling.
-      if (part.substr(0, 2) == 'p:') {
+      var part = parts[j]; // Parts starting with p: are used for pre-filling.
+
+      if (part.substr(0, 2) === 'p:') {
         var hashes = part.substr(2).split('&');
+
         for (var i = 0; i < hashes.length; i++) {
           p = hashes[i].indexOf('=');
-          key = hashes[i].substring(0, p);
-          // Backwards compatibility strip p: prefixes from keys.
-          if (key.substr(0, 2) == 'p:') {
+          key = hashes[i].substring(0, p); // Backwards compatibility strip p: prefixes from keys.
+
+          if (key.substr(0, 2) === 'p:') {
             key = key.substr(2);
           }
-          value = decodeURIComponent(hashes[i].substring(p+1));
-            // Prepare values to be set as list values.
+
+          value = decodeURIComponent(hashes[i].substring(p + 1)); // Prepare values to be set as list values.
+
           if (!(key in vars)) {
             vars[key] = [];
           }
-          vars[key].push(value);
-          // Set string values directly.
-          $.each(stores, function(index, store) {
+
+          vars[key].push(value); // Set string values directly.
+
+          $.each(stores, function (index, store) {
             pending++;
-            store.setItems([settings.stringPrefix + ':' + key], value).then(function() {
+            store.setItems([settings.stringPrefix + ':' + key], value).then(function () {
               promiseCompleted();
-            }, function() {
+            }, function () {
               promiseCompleted();
             });
           });
         }
+      } else {
+        newParts.push(part);
       }
-      else {
-        new_parts.push(part);
-      }
-    }
+    } // Finally set all list values.
 
-    // Finally set all list values.
-    $.each(stores, function(index, store) {
-      $.each(vars, function(key, value) {
+
+    $.each(stores, function (index, store) {
+      $.each(vars, function (key, value) {
         pending++;
-        store.setItems([settings.listPrefix + ':' + key], value).then(function() {
+        store.setItems([settings.listPrefix + ':' + key], value).then(function () {
           promiseCompleted();
-        }, function() {
+        }, function () {
           promiseCompleted();
         });
       });
     });
-
-    return new_parts.join(';');
+    return newParts.join(';');
   };
 
-  var Api = privates.Api = function($e, stores, settings) {
+  var Api = privates.Api = function ($e, stores, settings) {
     settings = settings || $.extend({}, defaults);
     this.stringPrefix = settings.stringPrefix;
     this.listPrefix = settings.listPrefix;
     this.$element = $e;
     this.stores = stores;
     var type = $e.attr('type');
-    if (type == 'radio' || type == 'checkbox') {
+
+    if (type === 'radio' || type === 'checkbox') {
       this.initialValue = $e[0].checked;
     } else {
       this.initialValue = $e.val();
-    }
+    } // Check for data attributes.
 
-    // Check for data attributes.
+
     if (typeof $e.attr('data-form-prefill-keys') !== 'undefined') {
       // Set data attributes so elements can be found via selector.
       // As the order of write keys is irrelevant, we sort them to make it
@@ -317,54 +475,54 @@
       $e.attr('data-form-prefill-read', $e.attr('data-form-prefill-keys'));
       $e.attr('data-form-prefill-write', serializeAttribute(parseAttribute($e.attr('data-form-prefill-keys')).sort()));
     }
-    if (typeof $e.attr('data-form-prefill-read') === 'undefined'
-      && typeof $e.attr('data-form-prefill-write') === 'undefined') {
+
+    if (typeof $e.attr('data-form-prefill-read') === 'undefined' && typeof $e.attr('data-form-prefill-write') === 'undefined') {
       var keys = settings.storageKeys($e);
       if (keys && typeof keys.read !== 'undefined') $e.attr('data-form-prefill-read', serializeAttribute(keys.read));
       if (keys && typeof keys.write !== 'undefined') $e.attr('data-form-prefill-write', serializeAttribute(parseAttribute(keys.write).sort()));
-    }
-    // Add aliases for read keys
+    } // Add aliases for read keys
+
+
     if (!$.isEmptyObject(settings.map)) {
-      var readKeys = parseAttribute($e.attr('data-form-prefill-read')), aliases = [];
+      var readKeys = parseAttribute($e.attr('data-form-prefill-read'));
+      var aliases = [];
+
       for (var i = 0, j = readKeys.length; i < j; i++) {
         if (readKeys[i] in settings.map) {
           aliases = aliases.concat(settings.map[readKeys[i]]);
         }
       }
+
       $e.attr('data-form-prefill-read', serializeAttribute(readKeys.concat(aliases)));
     }
   };
 
-  Api.prototype.read = function() {
+  Api.prototype.read = function () {
     var self = this;
     var keys = parseAttribute(this.$element.attr('data-form-prefill-read'));
     if (!keys.length) return Promise.reject(new Error('Don’t know which keys to read from.'));
-
     prefixArray(this.getFormatPrefix(), keys);
-
     var promisesRejected = 0;
-    return new Promise(function(resolve, reject) {
-      $.each(self.stores, function(i, store) {
-        store.getFirst(keys).then(function(value) {
+    return new Promise(function (resolve, reject) {
+      $.each(self.stores, function (i, store) {
+        store.getFirst(keys).then(function (value) {
           self.prefill(value);
           resolve(value);
-        }, function(cause) {
+        }, function (cause) {
           // Reject only when all of the stores have rejected.
-          if (++promisesRejected == self.stores.length) reject(cause);
+          if (++promisesRejected === self.stores.length) reject(cause);
         });
       });
     });
   };
 
-  Api.prototype.write = function(options) {
+  Api.prototype.write = function (options) {
     var self = this;
     var keys = parseAttribute(this.$element.attr('data-form-prefill-write'));
     if (!keys.length) return Promise.reject(new Error('No idea which keys to write to.'));
-
     prefixArray(this.getFormatPrefix(), keys);
-
     var promises = [];
-    $.each(self.stores, function(i, store) {
+    $.each(self.stores, function (i, store) {
       if (options && options.delete === true) {
         promises.push(store.removeItems(keys));
       } else {
@@ -372,22 +530,23 @@
       }
     });
     return Promise.all(promises);
-  }
+  };
 
-  Api.prototype.prefill = function(value) {
+  Api.prototype.prefill = function (value) {
     this.$element.val(value).trigger('change');
   };
 
-  Api.prototype.getVal = function() {
+  Api.prototype.getVal = function () {
     var type = this.$element.attr('type');
-    if (type == 'radio' || type == 'checkbox') {
+
+    if (type === 'radio' || type === 'checkbox') {
       // Get the value from all inputs that write to the same keys.
       var selector = '';
       var writeKeys = this.$element.attr('data-form-prefill-write');
-      if (writeKeys) selector += '[data-form-prefill-write="' + writeKeys + '"]'
+      if (writeKeys) selector += '[data-form-prefill-write="' + writeKeys + '"]';
       var $set = this.$element.closest('form').find(selector);
       var checked = [];
-      $set.each(function() {
+      $set.each(function () {
         if (this.checked) checked.push(this.value);
       });
       return checked;
@@ -396,84 +555,100 @@
     }
   };
 
-  Api.prototype.getFormatPrefix = function() {
+  Api.prototype.getFormatPrefix = function () {
     var type = this.$element.attr('type');
-    return (type == 'checkbox' || type == 'radio' || this.$element.is('select[multiple]')) ? this.listPrefix : this.stringPrefix;
+    return type === 'checkbox' || type === 'radio' || this.$element.is('select[multiple]') ? this.listPrefix : this.stringPrefix;
   };
 
-  $.fn.formPrefill = function(options) {
-
+  $.fn.formPrefill = function (options) {
     // Make private methods testable.
-    if (options == 'privates') {
+    if (options === 'privates') {
       return privates;
     }
 
     var settings = $.extend(defaults, options);
-
     var stores = $.extend(true, [], settings.stores);
+    var s;
+
     if (settings.useSessionStore) {
-      var _sessionStorage = getStorage("sessionStorage");
+      var _sessionStorage = getStorage('sessionStorage');
+
       if (_sessionStorage) {
-        var s = new WebStorage(_sessionStorage, settings.prefix);
+        s = new WebStorage(_sessionStorage, settings.prefix);
         if (s.browserSupport()) stores.push(s);
       }
     }
+
     if (settings.useLocalStore) {
-      var _localStorage = getStorage("localStorage");
+      var _localStorage = getStorage('localStorage');
+
       if (_localStorage) {
-        var s = new WebStorage(_localStorage, settings.prefix);
+        s = new WebStorage(_localStorage, settings.prefix);
         if (s.browserSupport()) stores.push(s);
       }
     }
+
     if (settings.useCookies) {
       stores.push(new CookieStorage(settings.prefix, settings.cookieDomain, settings.cookieMaxAge));
     }
 
-    var hash = window.location.hash.substr(1), hashUsed = false;
+    var hash = window.location.hash.substr(1);
+    var hashUsed = false;
+
     if (hash) {
       var newHash = readUrlVars(hash, stores, settings);
-      if (newHash != hash) {
+
+      if (newHash !== hash) {
         window.location.hash = '#' + newHash;
         hashUsed = true;
       }
     }
 
-    return this.each(function() {
+    return this.each(function () {
       var $self = $(this);
-      var $inputs = $self.find('input, select, textarea').not(function(i, element) {
+      var $inputs = $self.find('input, select, textarea').not(function (i, element) {
         // Exclude file elements. We can't prefill those.
-        if ($(element).attr('type') == 'file') {
+        if ($(element).attr('type') === 'file') {
           return true;
-        }
-        // Check nearest include and exclude-wrapper.
+        } // Check nearest include and exclude-wrapper.
+
+
         var $exclude = $(element).closest(settings.exclude);
         var $include = $(element).closest(settings.include);
+
         if ($exclude.length > 0) {
           // Exclude unless there is an include-wrapper inside the exclude wrapper.
           return $include.length <= 0 || $.contains($include.get(), $exclude.get());
         }
-        return false;
-      });
 
-      // This is the form’s api
+        return false;
+      }); // This is the form’s api
+
       $self.data('formPrefill', {
-        writeAll: function() {
-          $write = deduplicateSets($inputs);
-          $write.each(function() {
-            $(this).data('formPrefill').write().then(function() {}, function() {});
+        writeAll: function writeAll() {
+          var $write = deduplicateSets($inputs);
+          $write.each(function () {
+            $(this).data('formPrefill').write().then(function () {}, function () {});
           });
         },
-        removeAll: function(options) {
-          options = options || {resetFields: true};
-          $write = deduplicateSets($inputs);
-          $write.each(function() {
-            $(this).data('formPrefill').write({delete: true}).then(function() {}, function() {});
+        removeAll: function removeAll(options) {
+          options = options || {
+            resetFields: true
+          };
+          var $write = deduplicateSets($inputs);
+          $write.each(function () {
+            $(this).data('formPrefill').write({
+              delete: true
+            }).then(function () {}, function () {});
           });
+
           if (options.resetFields) {
-            $inputs.each(function() {
-              var $field = $(this), api = $field.data('formPrefill');
+            $inputs.each(function () {
+              var $field = $(this);
+              var api = $field.data('formPrefill');
               var type = $field.attr('type');
-              if (type == 'radio' || type == 'checkbox') {
+
+              if (type === 'radio' || type === 'checkbox') {
                 $field[0].checked = api.initialValue;
                 $field.trigger('change');
               } else {
@@ -481,36 +656,35 @@
               }
             });
           }
+
           $self.trigger('form-prefill:cleared');
         },
-        readAll: function() {
+        readAll: function readAll() {
           var prefilled = [];
-          $inputs.each(function() {
+          $inputs.each(function () {
             var $el = $(this);
-            $el.data('formPrefill').read().then(function() {
+            $el.data('formPrefill').read().then(function () {
               $el.trigger('form-prefill:prefilled');
-            }, function(cause) {
+            }, function (cause) {
               $el.trigger('form-prefill:failed', cause);
             });
           });
         }
-      });
+      }); // Initialize elements api
 
-      // Initialize elements api
-      $inputs.each(function() {
+      $inputs.each(function () {
         var $e = $(this);
         var api = new Api($e, stores, settings);
         $e.data('formPrefill', api);
-      });
+      }); // Write to stores on change
 
-      // Write to stores on change
-      $inputs.on('change.form-prefill', function() {
-        $(this).data('formPrefill').write().then(function() {}, function() {});
+      $inputs.on('change.form-prefill', function () {
+        $(this).data('formPrefill').write().then(function () {}, function () {});
       });
 
       if (hashUsed) {
         // Prefill fields when the values passed in the hash are stored.
-        $(document).on('hash-values-stored.form-prefill', function() {
+        $(document).on('hash-values-stored.form-prefill', function () {
           $self.data('formPrefill').readAll();
         });
       } else {
@@ -519,5 +693,5 @@
       }
     });
   };
-
-}( jQuery ));
+})(jQuery);
+},{}]},{},["epB2"], null)

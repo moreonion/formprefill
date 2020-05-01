@@ -1,26 +1,35 @@
 {
   "name": "@moreonion/jquery.formprefill",
   "version": "0.11.1",
-  "description": "Form prefill plugin for jQuery.",
+  "description": "Form prefill plugin for jQuery",
   "main": "jquery.formprefill.js",
   "directories": {
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/moreonion/jquery.formprefill.git"
+    "dev": "parcel build --no-minify --no-source-maps -d . -o jquery.formprefill.js src/main.js",
+    "dist": "parcel build --no-source-maps -d . -o jquery.formprefill.min.js src/main.js",
+    "lint": "eslint src"
   },
   "keywords": [
     "jquery-plugin"
   ],
   "author": "",
   "license": "LGPL-3.0",
-  "bugs": {
-    "url": "https://github.com/moreonion/jquery.formprefill/issues"
+  "devDependencies": {
+    "@babel/core": "^7.8.4",
+    "@babel/preset-env": "^7.8.4",
+    "babel-eslint": "^10.0.3",
+    "eslint": "^6.8.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.20.1",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "parcel-bundler": "^1.12.4",
+    "parcel-plugin-eslint": "^1.0.8-2"
   },
+  "dependencies": {},
   "homepage": "https://github.com/moreonion/jquery.formprefill#readme",
   "publishConfig": {
     "access": "public"
