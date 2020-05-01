@@ -64,12 +64,6 @@ import { WebStorage, Stores } from './storage'
     return ''
   }
 
-  var prefixArray = privates.prefixArray = function (prefix, arr) {
-    for (var i = 0, j = arr.length; i < j; i++) {
-      arr[i] = prefix + ':' + arr[i]
-    }
-  }
-
   var deduplicateSets = privates.deduplicateSets = function ($els) {
     // Remove all but one from each set of checkboxes or radios with the same
     // write attribute to prevent multiple writes to the stores.
@@ -179,9 +173,7 @@ import { WebStorage, Stores } from './storage'
   Api.prototype.read = function () {
     var keys = parseAttribute(this.$element.attr('data-form-prefill-read'))
     if (!keys.length) return Promise.reject(new Error('Don’t know which keys to read from.'))
-
-    prefixArray(this.getFormatPrefix(), keys)
-
+    this.stores.prefix(keys, this.isList())
     return this.stores.getFirst(keys).then((value) => {
       this.prefill(value)
     })
@@ -190,9 +182,7 @@ import { WebStorage, Stores } from './storage'
   Api.prototype.write = function (options) {
     var keys = parseAttribute(this.$element.attr('data-form-prefill-write'))
     if (!keys.length) return Promise.reject(new Error('No idea which keys to write to.'))
-
-    prefixArray(this.getFormatPrefix(), keys)
-
+    this.stores.prefix(keys, this.isList())
     if (options && options.delete === true) {
       return this.stores.removeItems(keys)
     }
@@ -224,9 +214,9 @@ import { WebStorage, Stores } from './storage'
     }
   }
 
-  Api.prototype.getFormatPrefix = function () {
+  Api.prototype.isList = function () {
     var type = this.$element.attr('type')
-    return (type === 'checkbox' || type === 'radio' || this.$element.is('select[multiple]')) ? this.listPrefix : this.stringPrefix
+    return type === 'checkbox' || type === 'radio' || this.$element.is('select[multiple]')
   }
 
   $.fn.formPrefill = function (options) {
