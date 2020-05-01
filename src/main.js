@@ -227,7 +227,8 @@ import { WebStorage, Stores } from './storage'
 
     var settings = $.extend(defaults, options)
 
-    var stores = Stores.fromSettings(settings)
+    var stores = privates.stores = Stores.fromSettings(settings)
+    $(document).trigger('form-prefill:stores-initialized', [stores])
 
     var hash = window.location.hash.substr(1); var hashUsed = false
     if (hash) {
