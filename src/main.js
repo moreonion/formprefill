@@ -197,7 +197,7 @@ import { defaults } from './defaults'
     return type === 'checkbox' || type === 'radio' || this.$element.is('select[multiple]')
   }
 
-  $(document).on('form-prefill:stores-initialized', function (event, stores) {
+  $(document).on('form-prefill:stores-initialized', function (event, stores, target) {
     var hash = window.location.hash.substr(1)
     if (hash) {
       var newHash = readUrlVars(hash, stores)
@@ -205,7 +205,7 @@ import { defaults } from './defaults'
         window.location.hash = '#' + newHash
       }
     }
-    $(document).trigger('form-prefill:stores-filled', [stores])
+    $(target).trigger('form-prefill:stores-filled', [stores])
   })
 
   $.fn.formPrefill = function (options) {
@@ -217,7 +217,7 @@ import { defaults } from './defaults'
     var settings = $.extend(defaults, options)
 
     var stores = privates.stores = Stores.fromSettings(settings)
-    $(document).trigger('form-prefill:stores-initialized', [stores])
+    $(document).trigger('form-prefill:stores-initialized', [stores, this])
 
     return this.each(function () {
       var $self = $(this)
@@ -296,7 +296,7 @@ import { defaults } from './defaults'
       })
 
       // Prefill fields when the values passed in the hash are stored.
-      $(document).on('form-prefill:stores-filled', function () {
+      $self.on('form-prefill:stores-filled', function () {
         $self.data('formPrefill').readAll()
       })
       // Prefill fields.
