@@ -21,6 +21,7 @@ QUnit.module('Integration', {
   afterEach: function() {
     this.$form.empty();
     this.$form2.empty();
+    $(document).unbind('form-prefill:stores-initialized form-prefill:stores-filled');
   }
 });
 
@@ -54,8 +55,7 @@ QUnit.test('Write all values', function(assert) {
   this.$form.formPrefill();
   this.$fields.filter('[type=text]').val('Miranda');
   this.$fields.filter('select').val('1');
-  this.$form.data('formPrefill').writeAll();
-  setTimeout(function() {
+  this.$form.data('formPrefill').writeAll().then(function () {
     assert.equal(sessionStorage.getItem('formPrefill:s:first_name'), '"Miranda"');
     assert.equal(sessionStorage.getItem('formPrefill:l:foo'), '["two","three"]');
     assert.equal(sessionStorage.getItem('formPrefill:l:age'), '["1"]');
@@ -63,7 +63,7 @@ QUnit.test('Write all values', function(assert) {
     sessionStorage.removeItem('formPrefill:l:foo');
     sessionStorage.removeItem('formPrefill:l:age');
     done();
-  }, 100);
+  });
 });
 
 QUnit.test('Remove all values and trigger event', function(assert) {
@@ -71,18 +71,16 @@ QUnit.test('Remove all values and trigger event', function(assert) {
   this.$form.formPrefill();
   this.$fields.filter('[type=text]').val('Miranda');
   this.$fields.filter('select').val('1');
-  this.$form.data('formPrefill').writeAll();
-  setTimeout(function() {
+  this.$form.data('formPrefill').writeAll().then(function () {
     assert.equal(sessionStorage.getItem('formPrefill:s:first_name'), '"Miranda"');
     assert.equal(sessionStorage.getItem('formPrefill:l:foo'), '["two","three"]');
     assert.equal(sessionStorage.getItem('formPrefill:l:age'), '["1"]');
-    self.$form.data('formPrefill').removeAll({resetFields: false});
-  }, 100);
-  this.$form.on('form-prefill:cleared', function() {
-    assert.equal(sessionStorage.getItem('formPrefill:s:first_name'), null);
-    assert.equal(sessionStorage.getItem('formPrefill:l:foo'), null);
-    assert.equal(sessionStorage.getItem('formPrefill:l:age'), null);
-    done();
+    self.$form.data('formPrefill').removeAll({resetFields: false}).then(function () {
+      assert.equal(sessionStorage.getItem('formPrefill:s:first_name'), null);
+      assert.equal(sessionStorage.getItem('formPrefill:l:foo'), null);
+      assert.equal(sessionStorage.getItem('formPrefill:l:age'), null);
+      done();
+    });
   });
 });
 

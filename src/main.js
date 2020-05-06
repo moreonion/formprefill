@@ -240,30 +240,35 @@ import { defaults } from './defaults'
       $self.data('formPrefill', {
         writeAll: function () {
           var $write = deduplicateSets($inputs)
+          const promises = []
           $write.each(function () {
-            $(this).data('formPrefill').write().then(function () {}, function () {})
+            promises.push($(this).data('formPrefill').write())
           })
+          return Promise.all(promises)
         },
         removeAll: function (options) {
           options = options || { resetFields: true }
           var $write = deduplicateSets($inputs)
+          const promises = []
           $write.each(function () {
-            $(this).data('formPrefill').write({ delete: true }).then(function () {}, function () {})
+            promises.push($(this).data('formPrefill').write({ delete: true }))
           })
-          if (options.resetFields) {
-            $inputs.each(function () {
-              var $field = $(this); var api = $field.data('formPrefill')
-              var type = $field.attr('type')
-              if (type === 'radio' || type === 'checkbox') {
-                $field[0].checked = api.initialValue
-                $field.trigger('change')
-              }
-              else {
-                $field.val(api.initialValue).trigger('change')
-              }
-            })
-          }
-          $self.trigger('form-prefill:cleared')
+          return Promise.all(promises).then(function () {
+            if (options.resetFields) {
+              $inputs.each(function () {
+                var $field = $(this); var api = $field.data('formPrefill')
+                var type = $field.attr('type')
+                if (type === 'radio' || type === 'checkbox') {
+                  $field[0].checked = api.initialValue
+                  $field.trigger('change')
+                }
+                else {
+                  $field.val(api.initialValue).trigger('change')
+                }
+              })
+            }
+            $self.trigger('form-prefill:cleared')
+          })
         },
         readAll: function () {
           var prefilled = []
