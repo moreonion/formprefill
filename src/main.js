@@ -5,7 +5,6 @@ import { WebStorage, Stores } from './storage'
 
 (function ($) {
   var defaults = {
-    prefix: 'formPrefill',
     storageKeys: function () {
       return {
         read: 'key',
@@ -15,14 +14,6 @@ import { WebStorage, Stores } from './storage'
     map: {},
     exclude: '[data-form-prefill-exclude]',
     include: '[data-form-prefill-include]',
-    stringPrefix: 's',
-    listPrefix: 'l',
-    stores: [],
-    useSessionStore: true,
-    useLocalStore: false,
-    useCookies: false,
-    cookieDomain: '',
-    cookieMaxAge: Infinity
   }
 
   var privates = {
