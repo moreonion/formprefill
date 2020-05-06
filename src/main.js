@@ -2,20 +2,9 @@
 
 import { Stores } from './Stores'
 import { WebStorage } from './WebStorage'
+import { defaults } from './defaults'
 
 (function ($) {
-  var defaults = {
-    storageKeys: function () {
-      return {
-        read: 'key',
-        write: 'key'
-      }
-    },
-    map: {},
-    exclude: '[data-form-prefill-exclude]',
-    include: '[data-form-prefill-include]',
-  }
-
   var privates = {
     WebStorage: WebStorage,
     Stores: Stores,

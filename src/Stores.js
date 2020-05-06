@@ -2,21 +2,9 @@
 
 import { CookieStorage } from './CookieStorage'
 import { WebStorage } from './WebStorage'
+import { defaults } from './defaults'
 
 const $ = jQuery
-
-const defaultSettings = {
-  prefix: 'formPrefill',
-  map: {},
-  stringPrefix: 's',
-  listPrefix: 'l',
-  stores: [],
-  useSessionStore: true,
-  useLocalStore: false,
-  useCookies: false,
-  cookieDomain: '',
-  cookieMaxAge: Infinity
-}
 
 function prefixArray (prefix, arr) {
   for (var i = 0, j = arr.length; i < j; i++) {
@@ -43,8 +31,8 @@ function getStorage (storageName) {
 
 class Stores {
   static fromSettings (settings) {
+    settings = $.extend({}, defaults, settings)
     const stores = $.extend(true, [], settings.stores)
-    settings = $.extend([], defaultSettings, settings)
     if (settings.useSessionStore) {
       const _sessionStorage = getStorage('sessionStorage')
       if (_sessionStorage) {
