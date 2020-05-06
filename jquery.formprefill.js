@@ -117,198 +117,422 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"epB2":[function(require,module,exports) {
-/* global jQuery */
-(function ($) {
-  var defaults = {
-    prefix: 'formPrefill',
-    storageKeys: function storageKeys() {
-      return {
-        read: 'key',
-        write: 'key'
-      };
-    },
-    map: {},
-    exclude: '[data-form-prefill-exclude]',
-    include: '[data-form-prefill-include]',
-    stringPrefix: 's',
-    listPrefix: 'l',
-    stores: [],
-    useSessionStore: true,
-    useLocalStore: false,
-    useCookies: false,
-    cookieDomain: '',
-    cookieMaxAge: Infinity
-  };
-  var privates = {}; // Expose methods for testing.
+})({"cjA7":[function(require,module,exports) {
+"use strict";
 
-  /* Cookie api taken from https://github.com/madmurphy/cookies.js, released under GNU Public License, version 3 or later */
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.cookies = void 0;
 
-  var docCookies = privates.docCookies = {
-    getItem: function getItem(sKey) {
-      if (!sKey) {
-        return null;
-      }
-
-      return decodeURIComponent(document.cookie.replace(new RegExp('(?:(?:^|.*;)\\s*' + encodeURIComponent(sKey).replace(/[-.+*]/g, '\\$&') + '\\s*\\=\\s*([^;]*).*$)|^.*$'), '$1')) || null;
-    },
-    setItem: function setItem(sKey, sValue, vEnd, sPath, sDomain, bSecure) {
-      if (!sKey || /^(?:expires|max-age|path|domain|secure)$/i.test(sKey)) {
-        return false;
-      }
-
-      var sExpires = '';
-
-      if (vEnd) {
-        switch (vEnd.constructor) {
-          case Number:
-            sExpires = vEnd === Infinity ? '; expires=Fri, 31 Dec 9999 23:59:59 GMT' : '; max-age=' + vEnd;
-            break;
-
-          case String:
-            sExpires = '; expires=' + vEnd;
-            break;
-
-          case Date:
-            sExpires = '; expires=' + vEnd.toUTCString();
-            break;
-        }
-      }
-
-      document.cookie = encodeURIComponent(sKey) + '=' + encodeURIComponent(sValue) + sExpires + (sDomain ? '; domain=' + sDomain : '') + (sPath ? '; path=' + sPath : '') + (bSecure ? '; secure' : '');
-      return true;
-    },
-    removeItem: function removeItem(sKey, sPath, sDomain) {
-      if (!this.hasItem(sKey)) {
-        return false;
-      }
-
-      document.cookie = encodeURIComponent(sKey) + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT' + (sDomain ? '; domain=' + sDomain : '') + (sPath ? '; path=' + sPath : '');
-      return true;
-    },
-    hasItem: function hasItem(sKey) {
-      if (!sKey) {
-        return false;
-      }
-
-      return new RegExp('(?:^|;\\s*)' + encodeURIComponent(sKey).replace(/[-.+*]/g, '\\$&') + '\\s*\\=').test(document.cookie);
-    },
-    keys: function keys() {
-      var aKeys = document.cookie.replace(/((?:^|\s*;)[^=]+)(?=;|$)|^\s*|\s*(?:=[^;]*)?(?:\1|$)/g, '').split(/\s*(?:=[^;]*)?;\s*/);
-
-      for (var nLen = aKeys.length, nIdx = 0; nIdx < nLen; nIdx++) {
-        aKeys[nIdx] = decodeURIComponent(aKeys[nIdx]);
-      }
-
-      return aKeys;
+/* Cookie api taken from https://github.com/madmurphy/cookies.js, released under GNU Public License, version 3 or later */
+var cookies = {
+  getItem: function getItem(sKey) {
+    if (!sKey) {
+      return null;
     }
-  };
 
-  var CookieStorage = privates.CookieStorage = function (pfx, domain, maxAge) {
+    return decodeURIComponent(document.cookie.replace(new RegExp('(?:(?:^|.*;)\\s*' + encodeURIComponent(sKey).replace(/[-.+*]/g, '\\$&') + '\\s*\\=\\s*([^;]*).*$)|^.*$'), '$1')) || null;
+  },
+  setItem: function setItem(sKey, sValue, vEnd, sPath, sDomain, bSecure) {
+    if (!sKey || /^(?:expires|max-age|path|domain|secure)$/i.test(sKey)) {
+      return false;
+    }
+
+    var sExpires = '';
+
+    if (vEnd) {
+      switch (vEnd.constructor) {
+        case Number:
+          sExpires = vEnd === Infinity ? '; expires=Fri, 31 Dec 9999 23:59:59 GMT' : '; max-age=' + vEnd;
+          break;
+
+        case String:
+          sExpires = '; expires=' + vEnd;
+          break;
+
+        case Date:
+          sExpires = '; expires=' + vEnd.toUTCString();
+          break;
+      }
+    }
+
+    document.cookie = encodeURIComponent(sKey) + '=' + encodeURIComponent(sValue) + sExpires + (sDomain ? '; domain=' + sDomain : '') + (sPath ? '; path=' + sPath : '') + (bSecure ? '; secure' : '');
+    return true;
+  },
+  removeItem: function removeItem(sKey, sPath, sDomain) {
+    if (!this.hasItem(sKey)) {
+      return false;
+    }
+
+    document.cookie = encodeURIComponent(sKey) + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT' + (sDomain ? '; domain=' + sDomain : '') + (sPath ? '; path=' + sPath : '');
+    return true;
+  },
+  hasItem: function hasItem(sKey) {
+    if (!sKey) {
+      return false;
+    }
+
+    return new RegExp('(?:^|;\\s*)' + encodeURIComponent(sKey).replace(/[-.+*]/g, '\\$&') + '\\s*\\=').test(document.cookie);
+  },
+  keys: function keys() {
+    var aKeys = document.cookie.replace(/((?:^|\s*;)[^=]+)(?=;|$)|^\s*|\s*(?:=[^;]*)?(?:\1|$)/g, '').split(/\s*(?:=[^;]*)?;\s*/);
+
+    for (var nLen = aKeys.length, nIdx = 0; nIdx < nLen; nIdx++) {
+      aKeys[nIdx] = decodeURIComponent(aKeys[nIdx]);
+    }
+
+    return aKeys;
+  }
+};
+exports.cookies = cookies;
+},{}],"K3ag":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.CookieStorage = void 0;
+
+var _cookies = require("./cookies");
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var CookieStorage = /*#__PURE__*/function () {
+  function CookieStorage(pfx, domain, maxAge) {
+    _classCallCheck(this, CookieStorage);
+
     this.pfx = pfx;
     this.domain = domain;
     this.maxAge = maxAge;
-  };
+  }
 
-  CookieStorage.prototype.setItems = function (keys, value) {
-    var self = this;
-    $.each(keys, function (i, key) {
-      docCookies.setItem(self.pfx + ':' + key, JSON.stringify(value), self.maxAge, '/', self.domain, true);
-    });
-    return Promise.resolve(true);
-  };
+  _createClass(CookieStorage, [{
+    key: "setItems",
+    value: function setItems(keys, value) {
+      var _this = this;
 
-  CookieStorage.prototype.removeItems = function (keys) {
-    var self = this;
-    $.each(keys, function (i, key) {
-      docCookies.removeItem(self.pfx + ':' + key, '/', self.domain);
-    });
-    return Promise.resolve(true);
-  };
-
-  CookieStorage.prototype.getFirst = function (keys) {
-    var self = this;
-    return new Promise(function (resolve, reject) {
-      $.each(keys, function (i, key) {
-        var v = docCookies.getItem(self.pfx + ':' + key);
-
-        if (v !== null) {
-          resolve(JSON.parse(v));
-        }
+      keys.forEach(function (key) {
+        _cookies.cookies.setItem(_this.pfx + ':' + key, JSON.stringify(value), _this.maxAge, '/', _this.domain, true);
       });
-      reject(new Error('keys not found in cookies: ' + keys.join(', ')));
-    });
-  };
-
-  var getStorage = privates.getStorage = function (storageName) {
-    if (['sessionStorage', 'localStorage'].indexOf(storageName) < 0) {
-      return null;
+      return Promise.resolve(true);
     }
-
-    var storage;
-
-    try {
-      // when blocking 3rd party cookies trying to access the existing storage
-      // will throw an exception
-      // see https://bugs.chromium.org/p/chromium/issues/detail?id=357625
-      storage = window[storageName];
-    } catch (e) {
-      return null;
+  }, {
+    key: "removeItems",
+    value: function removeItems(keys) {
+      keys.forEach(function (key) {
+        _cookies.cookies.removeItem(self.pfx + ':' + key, '/', self.domain);
+      });
+      return Promise.resolve(true);
     }
+  }, {
+    key: "getFirst",
+    value: function getFirst(keys) {
+      return new Promise(function (resolve, reject) {
+        var _this2 = this;
 
-    return storage;
-  };
+        keys.forEach(function (key) {
+          var v = _cookies.cookies.getItem(_this2.pfx + ':' + key);
 
-  var WebStorage = privates.WebStorage = function (type, pfx) {
+          if (v !== null) {
+            resolve(JSON.parse(v));
+          }
+        });
+        reject(new Error('keys not found in cookies: ' + keys.join(', ')));
+      });
+    }
+  }]);
+
+  return CookieStorage;
+}();
+
+exports.CookieStorage = CookieStorage;
+},{"./cookies":"cjA7"}],"Vqkv":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.WebStorage = void 0;
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var WebStorage = /*#__PURE__*/function () {
+  function WebStorage(type, pfx) {
+    _classCallCheck(this, WebStorage);
+
     this.storage = type;
     this.pfx = pfx;
-  };
+  }
 
-  WebStorage.prototype.browserSupport = function () {
-    // this is taken from modernizr.
-    var mod = 'modernizr';
+  _createClass(WebStorage, [{
+    key: "browserSupport",
+    value: function browserSupport() {
+      // this is taken from modernizr.
+      var mod = 'modernizr';
 
-    try {
-      this.storage.setItem(mod, mod);
-      this.storage.removeItem(mod);
-      return true;
-    } catch (e) {
-      return false;
+      try {
+        this.storage.setItem(mod, mod);
+        this.storage.removeItem(mod);
+        return true;
+      } catch (e) {
+        return false;
+      }
     }
-  };
+  }, {
+    key: "setItems",
+    value: function setItems(keys, value) {
+      var _this = this;
 
-  WebStorage.prototype.setItems = function (keys, value) {
-    var self = this;
-    $.each(keys, function (i, key) {
-      self.storage.setItem(self.pfx + ':' + key, JSON.stringify(value));
-    });
-    return Promise.resolve(true);
-  };
-
-  WebStorage.prototype.removeItems = function (keys) {
-    var self = this;
-    $.each(keys, function (i, key) {
-      self.storage.removeItem(self.pfx + ':' + key);
-    });
-    return Promise.resolve(true);
-  };
-
-  WebStorage.prototype.getFirst = function (keys) {
-    var self = this;
-    return new Promise(function (resolve, reject) {
-      $.each(keys, function (i, key) {
-        var v = self.storage.getItem(self.pfx + ':' + key);
-
-        if (v !== null) {
-          resolve(JSON.parse(v));
-        }
+      keys.forEach(function (key) {
+        _this.storage.setItem(_this.pfx + ':' + key, JSON.stringify(value));
       });
-      reject(new Error('keys not found in storage: ' + keys.join(', ')));
-    });
-  }; // Util methods:
+      return Promise.resolve(true);
+    }
+  }, {
+    key: "removeItems",
+    value: function removeItems(keys) {
+      var _this2 = this;
 
+      keys.forEach(function (key) {
+        _this2.storage.removeItem(_this2.pfx + ':' + key);
+      });
+      return Promise.resolve(true);
+    }
+  }, {
+    key: "getFirst",
+    value: function getFirst(keys) {
+      var _this3 = this;
 
-  defaults.storageKeys = privates.storageKeys = function ($e) {
+      return new Promise(function (resolve, reject) {
+        keys.forEach(function (key) {
+          var v = _this3.storage.getItem(_this3.pfx + ':' + key);
+
+          if (v !== null) {
+            resolve(JSON.parse(v));
+          }
+        });
+        reject(new Error('keys not found in storage: ' + keys.join(', ')));
+      });
+    }
+  }]);
+
+  return WebStorage;
+}();
+
+exports.WebStorage = WebStorage;
+},{}],"Tl9z":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.defaults = void 0;
+var defaults = {
+  prefix: 'formPrefill',
+  storageKeys: function storageKeys() {
+    return {
+      read: 'key',
+      write: 'key'
+    };
+  },
+  map: {},
+  exclude: '[data-form-prefill-exclude]',
+  include: '[data-form-prefill-include]',
+  stringPrefix: 's',
+  listPrefix: 'l',
+  stores: [],
+  useSessionStore: true,
+  useLocalStore: false,
+  useCookies: false,
+  cookieDomain: '',
+  cookieMaxAge: Infinity
+};
+exports.defaults = defaults;
+},{}],"bRBO":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Stores = void 0;
+
+var _CookieStorage = require("./CookieStorage");
+
+var _WebStorage = require("./WebStorage");
+
+var _defaults = require("./defaults");
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+var $ = jQuery;
+
+function prefixArray(prefix, arr) {
+  for (var i = 0, j = arr.length; i < j; i++) {
+    arr[i] = prefix + ':' + arr[i];
+  }
+}
+
+function getStorage(storageName) {
+  if (['sessionStorage', 'localStorage'].indexOf(storageName) < 0) {
+    return null;
+  }
+
+  var storage;
+
+  try {
+    // when blocking 3rd party cookies trying to access the existing storage
+    // will throw an exception
+    // see https://bugs.chromium.org/p/chromium/issues/detail?id=357625
+    storage = window[storageName];
+  } catch (e) {
+    return null;
+  }
+
+  return storage;
+}
+
+var Stores = /*#__PURE__*/function () {
+  _createClass(Stores, null, [{
+    key: "fromSettings",
+    value: function fromSettings(settings) {
+      settings = $.extend({}, _defaults.defaults, settings);
+      var stores = $.extend(true, [], settings.stores);
+
+      if (settings.useSessionStore) {
+        var _sessionStorage = getStorage('sessionStorage');
+
+        if (_sessionStorage) {
+          var s = new _WebStorage.WebStorage(_sessionStorage, settings.prefix);
+
+          if (s.browserSupport()) {
+            stores.push(s);
+          }
+        }
+      }
+
+      if (settings.useLocalStore) {
+        var _localStorage = getStorage('localStorage');
+
+        if (_localStorage) {
+          var _s = new _WebStorage.WebStorage(_localStorage, settings.prefix);
+
+          if (_s.browserSupport()) {
+            stores.push(_s);
+          }
+        }
+      }
+
+      if (settings.useCookies) {
+        stores.push(new _CookieStorage.CookieStorage(settings.prefix, settings.cookieDomain, settings.cookieMaxAge));
+      }
+
+      return new this(stores, settings.stringPrefix, settings.listPrefix);
+    }
+  }]);
+
+  function Stores(stores, stringPrefix, listPrefix) {
+    _classCallCheck(this, Stores);
+
+    this.stores = stores;
+    this.stringPrefix = stringPrefix;
+    this.listPrefix = listPrefix;
+  }
+
+  _createClass(Stores, [{
+    key: "setItems",
+    value: function setItems(keys, value) {
+      var promises = [];
+      this.stores.forEach(function (store, index) {
+        promises.push(store.setItems(keys, value));
+      });
+      return Promise.all(promises);
+    }
+  }, {
+    key: "removeItems",
+    value: function removeItems(keys) {
+      var promises = [];
+      this.stores.forEach(function (store, index) {
+        promises.push(store.removeItems(keys));
+      });
+      return Promise.all(promises);
+    }
+  }, {
+    key: "getFirst",
+    value: function getFirst(keys) {
+      var _this = this;
+
+      // This could use Promise.any() once it is standardized.
+      var promisesRejected = 0;
+      return new Promise(function (resolve, reject) {
+        _this.stores.forEach(function (store, index) {
+          store.getFirst(keys).then(function (value) {
+            resolve(value);
+          }, function (cause) {
+            // Reject only when all of the stores have rejected.
+            if (++promisesRejected === _this.stores.length) {
+              reject(cause);
+            }
+          });
+        });
+      });
+    }
+  }, {
+    key: "prefix",
+    value: function prefix(keys) {
+      var list = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+      prefixArray(list ? this.listPrefix : this.stringPrefix, keys);
+      return keys;
+    }
+  }, {
+    key: "setValuesMap",
+    value: function setValuesMap(vars) {
+      var _this2 = this;
+
+      var promises = [];
+      Object.keys(vars).forEach(function (key) {
+        var values = vars[key];
+        promises.push(_this2.setItems(_this2.prefix([key]), values[values.length - 1]));
+        promises.push(_this2.setItems(_this2.prefix([key], true), values));
+      });
+      return Promise.all(promises);
+    }
+  }]);
+
+  return Stores;
+}();
+
+exports.Stores = Stores;
+},{"./CookieStorage":"K3ag","./WebStorage":"Vqkv","./defaults":"Tl9z"}],"epB2":[function(require,module,exports) {
+"use strict";
+
+var _Stores = require("./Stores");
+
+var _WebStorage = require("./WebStorage");
+
+var _defaults = require("./defaults");
+
+/* global jQuery */
+(function ($) {
+  var privates = {
+    WebStorage: _WebStorage.WebStorage,
+    Stores: _Stores.Stores
+  }; // Expose methods for testing.
+  // Util methods:
+
+  _defaults.defaults.storageKeys = privates.storageKeys = function ($e) {
     var type = $e.attr('type');
     var name = $e.attr('name');
 
@@ -345,12 +569,6 @@ parcelRequire = (function (modules, cache, entry, globalName) {
     return '';
   };
 
-  var prefixArray = privates.prefixArray = function (prefix, arr) {
-    for (var i = 0, j = arr.length; i < j; i++) {
-      arr[i] = prefix + ':' + arr[i];
-    }
-  };
-
   var deduplicateSets = privates.deduplicateSets = function ($els) {
     // Remove all but one from each set of checkboxes or radios with the same
     // write attribute to prevent multiple writes to the stores.
@@ -377,7 +595,7 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   // All prefill-values are stored into the stores in string and list format.
 
 
-  var readUrlVars = privates.readUrlVars = function (hash, stores, settings) {
+  var readUrlVars = privates.readUrlVars = function (hash, stores) {
     hash = hash || window.location.hash.substr(1);
 
     if (!hash) {
@@ -390,17 +608,6 @@ parcelRequire = (function (modules, cache, entry, globalName) {
     var p;
     var parts;
     var newParts = [];
-    var pending = 0;
-
-    function promiseCompleted() {
-      pending--;
-
-      if (pending === 0) {
-        $(document).trigger('hash-values-stored.form-prefill');
-      }
-    }
-
-    ;
     parts = hash.split(';');
 
     for (var j = 0; j < parts.length; j++) {
@@ -423,40 +630,21 @@ parcelRequire = (function (modules, cache, entry, globalName) {
             vars[key] = [];
           }
 
-          vars[key].push(value); // Set string values directly.
-
-          $.each(stores, function (index, store) {
-            pending++;
-            store.setItems([settings.stringPrefix + ':' + key], value).then(function () {
-              promiseCompleted();
-            }, function () {
-              promiseCompleted();
-            });
-          });
+          vars[key].push(value);
         }
       } else {
         newParts.push(part);
       }
-    } // Finally set all list values.
+    }
 
-
-    $.each(stores, function (index, store) {
-      $.each(vars, function (key, value) {
-        pending++;
-        store.setItems([settings.listPrefix + ':' + key], value).then(function () {
-          promiseCompleted();
-        }, function () {
-          promiseCompleted();
-        });
-      });
+    stores.setValuesMap(vars).finally(function () {
+      $(document).trigger('hash-values-stored.form-prefill');
     });
     return newParts.join(';');
   };
 
   var Api = privates.Api = function ($e, stores, settings) {
-    settings = settings || $.extend({}, defaults);
-    this.stringPrefix = settings.stringPrefix;
-    this.listPrefix = settings.listPrefix;
+    settings = settings || $.extend({}, _defaults.defaults);
     this.$element = $e;
     this.stores = stores;
     var type = $e.attr('type');
@@ -498,38 +686,26 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   };
 
   Api.prototype.read = function () {
-    var self = this;
+    var _this = this;
+
     var keys = parseAttribute(this.$element.attr('data-form-prefill-read'));
     if (!keys.length) return Promise.reject(new Error('Don’t know which keys to read from.'));
-    prefixArray(this.getFormatPrefix(), keys);
-    var promisesRejected = 0;
-    return new Promise(function (resolve, reject) {
-      $.each(self.stores, function (i, store) {
-        store.getFirst(keys).then(function (value) {
-          self.prefill(value);
-          resolve(value);
-        }, function (cause) {
-          // Reject only when all of the stores have rejected.
-          if (++promisesRejected === self.stores.length) reject(cause);
-        });
-      });
+    this.stores.prefix(keys, this.isList());
+    return this.stores.getFirst(keys).then(function (value) {
+      _this.prefill(value);
     });
   };
 
   Api.prototype.write = function (options) {
-    var self = this;
     var keys = parseAttribute(this.$element.attr('data-form-prefill-write'));
     if (!keys.length) return Promise.reject(new Error('No idea which keys to write to.'));
-    prefixArray(this.getFormatPrefix(), keys);
-    var promises = [];
-    $.each(self.stores, function (i, store) {
-      if (options && options.delete === true) {
-        promises.push(store.removeItems(keys));
-      } else {
-        promises.push(store.setItems(keys, self.getVal()));
-      }
-    });
-    return Promise.all(promises);
+    this.stores.prefix(keys, this.isList());
+
+    if (options && options.delete === true) {
+      return this.stores.removeItems(keys);
+    } else {
+      return this.stores.setItems(keys, this.getVal());
+    }
   };
 
   Api.prototype.prefill = function (value) {
@@ -555,10 +731,24 @@ parcelRequire = (function (modules, cache, entry, globalName) {
     }
   };
 
-  Api.prototype.getFormatPrefix = function () {
+  Api.prototype.isList = function () {
     var type = this.$element.attr('type');
-    return type === 'checkbox' || type === 'radio' || this.$element.is('select[multiple]') ? this.listPrefix : this.stringPrefix;
+    return type === 'checkbox' || type === 'radio' || this.$element.is('select[multiple]');
   };
+
+  $(document).on('form-prefill:stores-initialized', function (event, stores, target) {
+    var hash = window.location.hash.substr(1);
+
+    if (hash) {
+      var newHash = readUrlVars(hash, stores);
+
+      if (newHash !== hash) {
+        window.location.hash = '#' + newHash;
+      }
+    }
+
+    $(target).trigger('form-prefill:stores-filled', [stores]);
+  });
 
   $.fn.formPrefill = function (options) {
     // Make private methods testable.
@@ -566,44 +756,11 @@ parcelRequire = (function (modules, cache, entry, globalName) {
       return privates;
     }
 
-    var settings = $.extend(defaults, options);
-    var stores = $.extend(true, [], settings.stores);
-    var s;
+    var settings = $.extend(_defaults.defaults, options);
 
-    if (settings.useSessionStore) {
-      var _sessionStorage = getStorage('sessionStorage');
+    var stores = privates.stores = _Stores.Stores.fromSettings(settings);
 
-      if (_sessionStorage) {
-        s = new WebStorage(_sessionStorage, settings.prefix);
-        if (s.browserSupport()) stores.push(s);
-      }
-    }
-
-    if (settings.useLocalStore) {
-      var _localStorage = getStorage('localStorage');
-
-      if (_localStorage) {
-        s = new WebStorage(_localStorage, settings.prefix);
-        if (s.browserSupport()) stores.push(s);
-      }
-    }
-
-    if (settings.useCookies) {
-      stores.push(new CookieStorage(settings.prefix, settings.cookieDomain, settings.cookieMaxAge));
-    }
-
-    var hash = window.location.hash.substr(1);
-    var hashUsed = false;
-
-    if (hash) {
-      var newHash = readUrlVars(hash, stores, settings);
-
-      if (newHash !== hash) {
-        window.location.hash = '#' + newHash;
-        hashUsed = true;
-      }
-    }
-
+    $(document).trigger('form-prefill:stores-initialized', [stores, this]);
     return this.each(function () {
       var $self = $(this);
       var $inputs = $self.find('input, select, textarea').not(function (i, element) {
@@ -627,37 +784,41 @@ parcelRequire = (function (modules, cache, entry, globalName) {
       $self.data('formPrefill', {
         writeAll: function writeAll() {
           var $write = deduplicateSets($inputs);
+          var promises = [];
           $write.each(function () {
-            $(this).data('formPrefill').write().then(function () {}, function () {});
+            promises.push($(this).data('formPrefill').write());
           });
+          return Promise.all(promises);
         },
         removeAll: function removeAll(options) {
           options = options || {
             resetFields: true
           };
           var $write = deduplicateSets($inputs);
+          var promises = [];
           $write.each(function () {
-            $(this).data('formPrefill').write({
+            promises.push($(this).data('formPrefill').write({
               delete: true
-            }).then(function () {}, function () {});
+            }));
           });
+          return Promise.all(promises).then(function () {
+            if (options.resetFields) {
+              $inputs.each(function () {
+                var $field = $(this);
+                var api = $field.data('formPrefill');
+                var type = $field.attr('type');
 
-          if (options.resetFields) {
-            $inputs.each(function () {
-              var $field = $(this);
-              var api = $field.data('formPrefill');
-              var type = $field.attr('type');
+                if (type === 'radio' || type === 'checkbox') {
+                  $field[0].checked = api.initialValue;
+                  $field.trigger('change');
+                } else {
+                  $field.val(api.initialValue).trigger('change');
+                }
+              });
+            }
 
-              if (type === 'radio' || type === 'checkbox') {
-                $field[0].checked = api.initialValue;
-                $field.trigger('change');
-              } else {
-                $field.val(api.initialValue).trigger('change');
-              }
-            });
-          }
-
-          $self.trigger('form-prefill:cleared');
+            $self.trigger('form-prefill:cleared');
+          });
         },
         readAll: function readAll() {
           var prefilled = [];
@@ -680,18 +841,14 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 
       $inputs.on('change.form-prefill', function () {
         $(this).data('formPrefill').write().then(function () {}, function () {});
-      });
+      }); // Prefill fields when the values passed in the hash are stored.
 
-      if (hashUsed) {
-        // Prefill fields when the values passed in the hash are stored.
-        $(document).on('hash-values-stored.form-prefill', function () {
-          $self.data('formPrefill').readAll();
-        });
-      } else {
-        // Prefill fields.
+      $self.on('form-prefill:stores-filled', function () {
         $self.data('formPrefill').readAll();
-      }
+      }); // Prefill fields.
+
+      $self.data('formPrefill').readAll();
     });
   };
 })(jQuery);
-},{}]},{},["epB2"], null)
+},{"./Stores":"bRBO","./WebStorage":"Vqkv","./defaults":"Tl9z"}]},{},["epB2"], null)
