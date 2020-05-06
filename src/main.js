@@ -1,7 +1,7 @@
 /* global jQuery */
 
-import { cookies } from './cookies'
-import { WebStorage, Stores } from './storage'
+import { Stores } from './Stores'
+import { WebStorage } from './WebStorage'
 
 (function ($) {
   var defaults = {
