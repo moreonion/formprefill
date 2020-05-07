@@ -4,7 +4,7 @@ Built by [more onion](https://www.more-onion.com) as a part of [Campaignion](htt
 
 ## Installation
 
-Pull in `jquery.formprefill.js` after jQuery.
+Pull in `jquery.formprefill.min.js` after jQuery.
 Promises have to be polyfilled for IE.
 
 ## Usage
