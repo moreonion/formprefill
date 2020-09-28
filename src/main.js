@@ -194,7 +194,7 @@ import { defaults } from './defaults'
 
   Api.prototype.isList = function () {
     var type = this.$element.attr('type')
-    return type === 'checkbox' || type === 'radio' || this.$element.is('select[multiple]')
+    return type === 'checkbox' || type === 'radio' || this.$element.is('select[multiple]') || this.$element.is('.form-prefill-list')
   }
 
   $(document).on('form-prefill:stores-initialized', function (event, stores, target) {
@@ -221,7 +221,7 @@ import { defaults } from './defaults'
 
     return this.each(function () {
       var $self = $(this)
-      var $inputs = $self.find('input, select, textarea').not(function (i, element) {
+      var $inputs = $self.find('input, select, textarea, .form-prefill, .form-prefill-list').not(function (i, element) {
         // Exclude file elements. We can't prefill those.
         if ($(element).attr('type') === 'file') {
           return true
