@@ -13,7 +13,8 @@ import { defaults } from './defaults'
   // Util methods:
 
   defaults.storageKeys = privates.storageKeys = function ($e) {
-    var type = $e.attr('type'); var name = $e.attr('name')
+    var type = $e[0].getAttribute('type')
+    var name = $e[0].getAttribute('name')
     if (!name) {
       return undefined
     }
@@ -49,8 +50,8 @@ import { defaults } from './defaults'
     // write attribute to prevent multiple writes to the stores.
     var sets = []
     return $els.filter(function () {
-      var keys = $(this).attr('data-form-prefill-write')
-      var type = $(this).attr('type')
+      var keys = this.getAttribute('data-form-prefill-write')
+      var type = this.getAttribute('type')
       if (type === 'checkbox' || type === 'radio') {
         if (sets.indexOf(keys) === -1) {
           sets.push(keys)
@@ -113,8 +114,9 @@ import { defaults } from './defaults'
   var Api = privates.Api = function ($e, stores, settings) {
     settings = settings || $.extend({}, defaults)
     this.$element = $e
+    this.element = $e.get(0)
     this.stores = stores
-    var type = $e.attr('type')
+    var type = $e[0].getAttribute('type')
     if (type === 'radio' || type === 'checkbox') {
       this.initialValue = $e[0].checked
     }
@@ -123,33 +125,37 @@ import { defaults } from './defaults'
     }
 
     // Check for data attributes.
-    if (typeof $e.attr('data-form-prefill-keys') !== 'undefined') {
+    if ($e[0].getAttribute('data-form-prefill-keys') !== null) {
       // Set data attributes so elements can be found via selector.
       // As the order of write keys is irrelevant, we sort them to make it
       // possible to determine sets of checkboxes via string comparison of their write keys.
-      $e.attr('data-form-prefill-read', $e.attr('data-form-prefill-keys'))
-      $e.attr('data-form-prefill-write', serializeAttribute(parseAttribute($e.attr('data-form-prefill-keys')).sort()))
+      $e[0].setAttribute('data-form-prefill-read', $e[0].getAttribute('data-form-prefill-keys'))
+      $e[0].setAttribute('data-form-prefill-write', serializeAttribute(parseAttribute($e[0].getAttribute('data-form-prefill-keys')).sort()))
     }
-    if (typeof $e.attr('data-form-prefill-read') === 'undefined' &&
-      typeof $e.attr('data-form-prefill-write') === 'undefined') {
+    if ($e[0].getAttribute('data-form-prefill-read') === null &&
+      $e[0].getAttribute('data-form-prefill-write') === null) {
       var keys = settings.storageKeys($e)
-      if (keys && typeof keys.read !== 'undefined') $e.attr('data-form-prefill-read', serializeAttribute(keys.read))
-      if (keys && typeof keys.write !== 'undefined') $e.attr('data-form-prefill-write', serializeAttribute(parseAttribute(keys.write).sort()))
+      if (keys && typeof keys.read !== 'undefined') {
+        $e[0].setAttribute('data-form-prefill-read', serializeAttribute(keys.read))
+      }
+      if (keys && typeof keys.write !== 'undefined') {
+        $e[0].setAttribute('data-form-prefill-write', serializeAttribute(parseAttribute(keys.write).sort()))
+      }
     }
     // Add aliases for read keys
     if (!$.isEmptyObject(settings.map)) {
-      var readKeys = parseAttribute($e.attr('data-form-prefill-read')); var aliases = []
+      var readKeys = parseAttribute($e[0].getAttribute('data-form-prefill-read')); var aliases = []
       for (var i = 0, j = readKeys.length; i < j; i++) {
         if (readKeys[i] in settings.map) {
           aliases = aliases.concat(settings.map[readKeys[i]])
         }
       }
-      $e.attr('data-form-prefill-read', serializeAttribute(readKeys.concat(aliases)))
+      $e[0].setAttribute('data-form-prefill-read', serializeAttribute(readKeys.concat(aliases)))
     }
   }
 
   Api.prototype.read = function () {
-    var keys = parseAttribute(this.$element.attr('data-form-prefill-read'))
+    var keys = parseAttribute(this.element.getAttribute('data-form-prefill-read'))
     if (!keys.length) return Promise.reject(new Error('Don’t know which keys to read from.'))
     this.stores.prefix(keys, this.isList())
     return this.stores.getFirst(keys).then((value) => {
@@ -158,7 +164,7 @@ import { defaults } from './defaults'
   }
 
   Api.prototype.write = function (options) {
-    var keys = parseAttribute(this.$element.attr('data-form-prefill-write'))
+    var keys = parseAttribute(this.element.getAttribute('data-form-prefill-write'))
     if (!keys.length) return Promise.reject(new Error('No idea which keys to write to.'))
     this.stores.prefix(keys, this.isList())
     if (options && options.delete === true) {
@@ -174,11 +180,11 @@ import { defaults } from './defaults'
   }
 
   Api.prototype.getVal = function () {
-    var type = this.$element.attr('type')
+    var type = this.element.getAttribute('type')
     if (type === 'radio' || type === 'checkbox') {
       // Get the value from all inputs that write to the same keys.
       var selector = ''
-      var writeKeys = this.$element.attr('data-form-prefill-write')
+      var writeKeys = this.element.getAttribute('data-form-prefill-write')
       if (writeKeys) selector += '[data-form-prefill-write="' + writeKeys + '"]'
       var $set = this.$element.closest('form').find(selector)
       var checked = []
@@ -193,7 +199,7 @@ import { defaults } from './defaults'
   }
 
   Api.prototype.isList = function () {
-    var type = this.$element.attr('type')
+    var type = this.element.getAttribute('type')
     return type === 'checkbox' || type === 'radio' || this.$element.is('select[multiple]') || this.$element.is('.form-prefill-list')
   }
 
@@ -223,7 +229,7 @@ import { defaults } from './defaults'
       var $self = $(this)
       var $inputs = $self.find('input, select, textarea, .form-prefill, .form-prefill-list').not(function (i, element) {
         // Exclude file elements. We can't prefill those.
-        if ($(element).attr('type') === 'file') {
+        if (element.getAttribute('type') === 'file') {
           return true
         }
         // Check nearest include and exclude-wrapper.
@@ -257,7 +263,7 @@ import { defaults } from './defaults'
             if (options.resetFields) {
               $inputs.each(function () {
                 var $field = $(this); var api = $field.data('formPrefill')
-                var type = $field.attr('type')
+                var type = this.getAttribute('type')
                 if (type === 'radio' || type === 'checkbox') {
                   $field[0].checked = api.initialValue
                   $field.trigger('change')
