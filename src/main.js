@@ -105,7 +105,7 @@ import { defaults } from './defaults'
     }
 
     stores.setValuesMap(vars).finally(function () {
-      $(document).trigger('hash-values-stored.form-prefill')
+      document.dispatchEvent(new CustomEvent('hash-values-stored.form-prefill', {bubbles: true}))
     })
 
     return newParts.join(';')
@@ -176,7 +176,8 @@ import { defaults } from './defaults'
   }
 
   Api.prototype.prefill = function (value) {
-    this.$element.val(value).trigger('change')
+    this.$element.val(value)
+    this.element.dispatchEvent(new Event('change', {bubbles: true}))
   }
 
   Api.prototype.getVal = function () {
@@ -203,15 +204,21 @@ import { defaults } from './defaults'
     return type === 'checkbox' || type === 'radio' || this.$element.is('select[multiple]') || this.$element.is('.form-prefill-list')
   }
 
-  $(document).on('form-prefill:stores-initialized', function (event, stores, target) {
+  document.addEventListener('form-prefill:stores-initialized', function (event) {
     var hash = window.location.hash.substr(1)
+    let stores = event.detail
     if (hash) {
       var newHash = readUrlVars(hash, stores)
       if (newHash !== hash) {
         window.location.hash = '#' + newHash
       }
     }
-    $(target).trigger('form-prefill:stores-filled', [stores])
+    event.target.dispatchEvent(
+      new CustomEvent('form-prefill:stores-filled', {
+        detail: stores,
+        bubbles: true
+      })
+    )
   })
 
   $.fn.formPrefill = function (options) {
@@ -223,7 +230,7 @@ import { defaults } from './defaults'
     var settings = $.extend(defaults, options)
 
     var stores = privates.stores = Stores.fromSettings(settings)
-    $(document).trigger('form-prefill:stores-initialized', [stores, this])
+    document.dispatchEvent(new CustomEvent('form-prefill:stores-initialized', {detail: [stores, this], bubbles: true}))
 
     return this.each(function () {
       var $self = $(this)
@@ -266,14 +273,14 @@ import { defaults } from './defaults'
                 var type = this.getAttribute('type')
                 if (type === 'radio' || type === 'checkbox') {
                   $field[0].checked = api.initialValue
-                  $field.trigger('change')
                 }
                 else {
-                  $field.val(api.initialValue).trigger('change')
+                  $field.val(api.initialValue)
                 }
+                this.dispatchEvent(new Event('change', {bubbles: true}))
               })
             }
-            $self.trigger('form-prefill:cleared')
+            $self[0].dispatchEvent(new CustomEvent('form-prefill:cleared', {bubbles: true}))
           })
         },
         readAll: function () {
@@ -281,9 +288,9 @@ import { defaults } from './defaults'
           $inputs.each(function () {
             var $el = $(this)
             $el.data('formPrefill').read().then(function () {
-              $el.trigger('form-prefill:prefilled')
+              $el[0].dispatchEvent(new CustomEvent('form-prefill:prefilled', {bubbles: true}))
             }, function (cause) {
-              $el.trigger('form-prefill:failed', cause)
+              $el[0].dispatchEvent(new CustomEvent('form-prefill:failed', {detail: cause, bubbles: true}))
             })
           })
         }
