@@ -9,37 +9,37 @@ QUnit.module('utils', {
 });
 
 QUnit.test('storageKeys: text', function(assert) {
-  var r = this.privates.storageKeys($('<input name="submitted[personal_data][first_name]" type="text">'));
+  var r = this.privates.storageKeys($('<input name="submitted[personal_data][first_name]" type="text">')[0]);
   assert.equal(r.read, 'first_name');
   assert.equal(r.write, 'first_name');
 });
 
 QUnit.test('storageKeys: select', function(assert) {
-  var r = this.privates.storageKeys($('<select name="submitted[personal_data][country]">'));
+  var r = this.privates.storageKeys($('<select name="submitted[personal_data][country]">')[0]);
   assert.equal(r.read, 'country');
   assert.equal(r.write, 'country');
 });
 
 QUnit.test('storageKeys: multiselect', function(assert) {
-  var r = this.privates.storageKeys($('<select name="submitted[foo][]">'));
+  var r = this.privates.storageKeys($('<select name="submitted[foo][]">')[0]);
   assert.equal(r.read, 'foo');
   assert.equal(r.write, 'foo');
 });
 
 QUnit.test('storageKeys: checkboxes', function(assert) {
-  var r = this.privates.storageKeys($('<input name="submitted[foo][bar]" value="bar" type="checkbox">'));
+  var r = this.privates.storageKeys($('<input name="submitted[foo][bar]" value="bar" type="checkbox">')[0]);
   assert.equal(r.read, 'foo');
   assert.equal(r.write, 'foo');
 });
 
 QUnit.test('storageKeys: radios', function(assert) {
-  var r = this.privates.storageKeys($('<input name="submitted[foo]" value="bar" type="radio">'));
+  var r = this.privates.storageKeys($('<input name="submitted[foo]" value="bar" type="radio">')[0]);
   assert.equal(r.read, 'foo');
   assert.equal(r.write, 'foo');
 });
 
 QUnit.test('storageKeys: plain name without brackets', function(assert) {
-  var r = this.privates.storageKeys($('<input name="first_name" type="text">'));
+  var r = this.privates.storageKeys($('<input name="first_name" type="text">')[0]);
   assert.equal(r.read, 'first_name');
   assert.equal(r.write, 'first_name');
 });

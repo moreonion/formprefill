@@ -12,9 +12,9 @@ import { defaults } from './defaults'
 
   // Util methods:
 
-  defaults.storageKeys = privates.storageKeys = function ($e) {
-    var type = $e[0].getAttribute('type')
-    var name = $e[0].getAttribute('name')
+  defaults.storageKeys = privates.storageKeys = function (element) {
+    var type = element.getAttribute('type')
+    var name = element.getAttribute('name')
     if (!name) {
       return undefined
     }
@@ -134,7 +134,7 @@ import { defaults } from './defaults'
     }
     if ($e[0].getAttribute('data-form-prefill-read') === null &&
       $e[0].getAttribute('data-form-prefill-write') === null) {
-      var keys = settings.storageKeys($e)
+      var keys = settings.storageKeys($e[0])
       if (keys && typeof keys.read !== 'undefined') {
         $e[0].setAttribute('data-form-prefill-read', serializeAttribute(keys.read))
       }
