@@ -187,7 +187,7 @@ import { defaults } from './defaults'
       var selector = ''
       var writeKeys = this.element.getAttribute('data-form-prefill-write')
       if (writeKeys) selector += '[data-form-prefill-write="' + writeKeys + '"]'
-      var $set = this.$element.closest('form').find(selector)
+      var $set = $(this.element.closest('form')).find(selector)
       var checked = []
       $set.each(function () {
         if (this.checked) checked.push(this.value)
@@ -240,8 +240,8 @@ import { defaults } from './defaults'
           return true
         }
         // Check nearest include and exclude-wrapper.
-        var $exclude = $(element).closest(settings.exclude)
-        var $include = $(element).closest(settings.include)
+        var $exclude = $(element.closest(settings.exclude))
+        var $include = $(element.closest(settings.include))
         if ($exclude.length > 0) {
           // Exclude unless there is an include-wrapper inside the exclude wrapper.
           return $include.length <= 0 || $.contains($include.get(), $exclude.get())
