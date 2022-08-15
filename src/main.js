@@ -112,7 +112,7 @@ import { defaults } from './defaults'
   }
 
   var Api = privates.Api = function ($e, stores, settings) {
-    settings = settings || $.extend({}, defaults)
+    settings = settings || {...defaults}
     this.$element = $e
     this.element = $e.get(0)
     this.stores = stores
@@ -227,7 +227,7 @@ import { defaults } from './defaults'
       return privates
     }
 
-    var settings = $.extend(defaults, options)
+    var settings = {...defaults, ...options}
 
     var stores = privates.stores = Stores.fromSettings(settings)
     document.dispatchEvent(new CustomEvent('form-prefill:stores-initialized', {detail: [stores, this], bubbles: true}))

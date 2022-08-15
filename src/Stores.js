@@ -31,8 +31,8 @@ function getStorage (storageName) {
 
 class Stores {
   static fromSettings (settings) {
-    settings = $.extend({}, defaults, settings)
-    const stores = $.extend(true, [], settings.stores)
+    settings = {...defaults, ...settings}
+    const stores = settings.stores || []
     if (settings.useSessionStore) {
       const _sessionStorage = getStorage('sessionStorage')
       if (_sessionStorage) {
