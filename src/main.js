@@ -45,13 +45,13 @@ import { defaults } from './defaults'
     return ''
   }
 
-  var deduplicateSets = privates.deduplicateSets = function ($els) {
+  var deduplicateSets = privates.deduplicateSets = function (elements) {
     // Remove all but one from each set of checkboxes or radios with the same
     // write attribute to prevent multiple writes to the stores.
     var sets = []
-    return $els.filter(function () {
-      var keys = this.getAttribute('data-form-prefill-write')
-      var type = this.getAttribute('type')
+    return Array.prototype.filter.call(elements, function (element) {
+      var keys = element.getAttribute('data-form-prefill-write')
+      var type = element.getAttribute('type')
       if (type === 'checkbox' || type === 'radio') {
         if (sets.indexOf(keys) === -1) {
           sets.push(keys)
@@ -245,7 +245,7 @@ import { defaults } from './defaults'
       // This is the form’s api
       $self.data('formPrefill', {
         writeAll: function () {
-          var $write = deduplicateSets($inputs)
+          var $write = $(deduplicateSets($inputs.get()))
           const promises = []
           $write.each(function () {
             promises.push($(this).data('formPrefill').write())
@@ -254,7 +254,7 @@ import { defaults } from './defaults'
         },
         removeAll: function (options) {
           options = options || { resetFields: true }
-          var $write = deduplicateSets($inputs)
+          var $write = $(deduplicateSets($inputs.get()))
           const promises = []
           $write.each(function () {
             promises.push($(this).data('formPrefill').write({ delete: true }))
