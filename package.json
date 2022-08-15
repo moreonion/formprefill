@@ -1,15 +1,20 @@
 {
+  "type": "module",
   "name": "@moreonion/jquery.formprefill",
   "version": "0.13.0",
   "description": "Form prefill plugin for jQuery",
-  "main": "jquery.formprefill.js",
+  "source": "src/main.js",
+  "main": "dist/jquery.formprefill.cjs",
+  "module": "dist/jquery.formprefill.js",
   "directories": {
     "test": "tests"
   },
   "scripts": {
-    "dev": "parcel build --no-minify --no-source-maps -d . -o jquery.formprefill.js src/main.js",
-    "dist": "parcel build --no-source-maps -d . -o jquery.formprefill.min.js src/main.js",
-    "lint": "eslint src"
+    "dev": "microbundle watch src/main.js",
+    "dev-build": "microbundle -i src/main.js --no-compress && cp dist/jquery.formprefill.cjs jquery.formprefill.js",
+    "dist": "microbundle -i src/main.js && cp dist/jquery.formprefill.cjs jquery.formprefill.min.js",
+    "lint": "eslint src",
+    "fix": "eslint --fix src/**/*.js"
   },
   "keywords": [
     "jquery-plugin"
@@ -17,17 +22,8 @@
   "author": "",
   "license": "LGPL-3.0",
   "devDependencies": {
-    "@babel/core": "^7.8.4",
-    "@babel/preset-env": "^7.8.4",
-    "babel-eslint": "^10.0.3",
-    "eslint": "^6.8.0",
-    "eslint-config-standard": "^14.1.0",
-    "eslint-plugin-import": "^2.20.1",
-    "eslint-plugin-node": "^11.0.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.1",
-    "parcel-bundler": "^1.12.4",
-    "parcel-plugin-eslint": "^1.0.8-2"
+    "core-js": "3",
+    "microbundle": "^0.15.1"
   },
   "dependencies": {},
   "homepage": "https://github.com/moreonion/jquery.formprefill#readme",

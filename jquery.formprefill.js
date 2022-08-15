@@ -1,140 +1,13 @@
-// modules are defined as an array
-// [ module function, map of requires ]
-//
-// map of requires is short require name -> numeric require
-//
-// anything defined in a previous bundle is accessed via the
-// orig method which is the require for previous bundles
-parcelRequire = (function (modules, cache, entry, globalName) {
-  // Save the require from previous bundle to this closure if any
-  var previousRequire = typeof parcelRequire === 'function' && parcelRequire;
-  var nodeRequire = typeof require === 'function' && require;
-
-  function newRequire(name, jumped) {
-    if (!cache[name]) {
-      if (!modules[name]) {
-        // if we cannot find the module within our internal map or
-        // cache jump to the current global require ie. the last bundle
-        // that was added to the page.
-        var currentRequire = typeof parcelRequire === 'function' && parcelRequire;
-        if (!jumped && currentRequire) {
-          return currentRequire(name, true);
-        }
-
-        // If there are other bundles on this page the require from the
-        // previous one is saved to 'previousRequire'. Repeat this as
-        // many times as there are bundles until the module is found or
-        // we exhaust the require chain.
-        if (previousRequire) {
-          return previousRequire(name, true);
-        }
-
-        // Try the node require function if it exists.
-        if (nodeRequire && typeof name === 'string') {
-          return nodeRequire(name);
-        }
-
-        var err = new Error('Cannot find module \'' + name + '\'');
-        err.code = 'MODULE_NOT_FOUND';
-        throw err;
-      }
-
-      localRequire.resolve = resolve;
-      localRequire.cache = {};
-
-      var module = cache[name] = new newRequire.Module(name);
-
-      modules[name][0].call(module.exports, localRequire, module, module.exports, this);
-    }
-
-    return cache[name].exports;
-
-    function localRequire(x){
-      return newRequire(localRequire.resolve(x));
-    }
-
-    function resolve(x){
-      return modules[name][1][x] || x;
-    }
-  }
-
-  function Module(moduleName) {
-    this.id = moduleName;
-    this.bundle = newRequire;
-    this.exports = {};
-  }
-
-  newRequire.isParcelRequire = true;
-  newRequire.Module = Module;
-  newRequire.modules = modules;
-  newRequire.cache = cache;
-  newRequire.parent = previousRequire;
-  newRequire.register = function (id, exports) {
-    modules[id] = [function (require, module) {
-      module.exports = exports;
-    }, {}];
-  };
-
-  var error;
-  for (var i = 0; i < entry.length; i++) {
-    try {
-      newRequire(entry[i]);
-    } catch (e) {
-      // Save first error but execute all entries
-      if (!error) {
-        error = e;
-      }
-    }
-  }
-
-  if (entry.length) {
-    // Expose entry point to Node, AMD or browser globals
-    // Based on https://github.com/ForbesLindesay/umd/blob/master/template.js
-    var mainExports = newRequire(entry[entry.length - 1]);
-
-    // CommonJS
-    if (typeof exports === "object" && typeof module !== "undefined") {
-      module.exports = mainExports;
-
-    // RequireJS
-    } else if (typeof define === "function" && define.amd) {
-     define(function () {
-       return mainExports;
-     });
-
-    // <script>
-    } else if (globalName) {
-      this[globalName] = mainExports;
-    }
-  }
-
-  // Override the current require with this new one
-  parcelRequire = newRequire;
-
-  if (error) {
-    // throw error from earlier, _after updating parcelRequire_
-    throw error;
-  }
-
-  return newRequire;
-})({"cjA7":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.cookies = void 0;
-
 /* Cookie api taken from https://github.com/madmurphy/cookies.js, released under GNU Public License, version 3 or later */
 var cookies = {
-  getItem: function getItem(sKey) {
+  getItem: function (sKey) {
     if (!sKey) {
       return null;
     }
 
     return decodeURIComponent(document.cookie.replace(new RegExp('(?:(?:^|.*;)\\s*' + encodeURIComponent(sKey).replace(/[-.+*]/g, '\\$&') + '\\s*\\=\\s*([^;]*).*$)|^.*$'), '$1')) || null;
   },
-  setItem: function setItem(sKey, sValue, vEnd, sPath, sDomain, bSecure) {
+  setItem: function (sKey, sValue, vEnd, sPath, sDomain, bSecure) {
     if (!sKey || /^(?:expires|max-age|path|domain|secure)$/i.test(sKey)) {
       return false;
     }
@@ -160,7 +33,7 @@ var cookies = {
     document.cookie = encodeURIComponent(sKey) + '=' + encodeURIComponent(sValue) + sExpires + (sDomain ? '; domain=' + sDomain : '') + (sPath ? '; path=' + sPath : '') + (bSecure ? '; secure' : '');
     return true;
   },
-  removeItem: function removeItem(sKey, sPath, sDomain) {
+  removeItem: function (sKey, sPath, sDomain) {
     if (!this.hasItem(sKey)) {
       return false;
     }
@@ -168,14 +41,14 @@ var cookies = {
     document.cookie = encodeURIComponent(sKey) + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT' + (sDomain ? '; domain=' + sDomain : '') + (sPath ? '; path=' + sPath : '');
     return true;
   },
-  hasItem: function hasItem(sKey) {
+  hasItem: function (sKey) {
     if (!sKey) {
       return false;
     }
 
     return new RegExp('(?:^|;\\s*)' + encodeURIComponent(sKey).replace(/[-.+*]/g, '\\$&') + '\\s*\\=').test(document.cookie);
   },
-  keys: function keys() {
+  keys: function () {
     var aKeys = document.cookie.replace(/((?:^|\s*;)[^=]+)(?=;|$)|^\s*|\s*(?:=[^;]*)?(?:\1|$)/g, '').split(/\s*(?:=[^;]*)?;\s*/);
 
     for (var nLen = aKeys.length, nIdx = 0; nIdx < nLen; nIdx++) {
@@ -185,160 +58,94 @@ var cookies = {
     return aKeys;
   }
 };
-exports.cookies = cookies;
-},{}],"K3ag":[function(require,module,exports) {
-"use strict";
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.CookieStorage = void 0;
-
-var _cookies = require("./cookies");
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-var CookieStorage = /*#__PURE__*/function () {
-  function CookieStorage(pfx, domain, maxAge) {
-    _classCallCheck(this, CookieStorage);
-
+class CookieStorage {
+  constructor(pfx, domain, maxAge) {
     this.pfx = pfx;
     this.domain = domain;
     this.maxAge = maxAge;
   }
 
-  _createClass(CookieStorage, [{
-    key: "setItems",
-    value: function setItems(keys, value) {
-      var _this = this;
+  setItems(keys, value) {
+    keys.forEach(key => {
+      cookies.setItem(this.pfx + ':' + key, JSON.stringify(value), this.maxAge, '/', this.domain, true);
+    });
+    return Promise.resolve(true);
+  }
 
-      keys.forEach(function (key) {
-        _cookies.cookies.setItem(_this.pfx + ':' + key, JSON.stringify(value), _this.maxAge, '/', _this.domain, true);
+  removeItems(keys) {
+    keys.forEach(key => {
+      cookies.removeItem(self.pfx + ':' + key, '/', self.domain);
+    });
+    return Promise.resolve(true);
+  }
+
+  getFirst(keys) {
+    return new Promise(function (resolve, reject) {
+      keys.forEach(key => {
+        var v = cookies.getItem(this.pfx + ':' + key);
+
+        if (v !== null) {
+          resolve(JSON.parse(v));
+        }
       });
-      return Promise.resolve(true);
-    }
-  }, {
-    key: "removeItems",
-    value: function removeItems(keys) {
-      keys.forEach(function (key) {
-        _cookies.cookies.removeItem(self.pfx + ':' + key, '/', self.domain);
-      });
-      return Promise.resolve(true);
-    }
-  }, {
-    key: "getFirst",
-    value: function getFirst(keys) {
-      return new Promise(function (resolve, reject) {
-        var _this2 = this;
+      reject(new Error('keys not found in cookies: ' + keys.join(', ')));
+    });
+  }
 
-        keys.forEach(function (key) {
-          var v = _cookies.cookies.getItem(_this2.pfx + ':' + key);
+}
 
-          if (v !== null) {
-            resolve(JSON.parse(v));
-          }
-        });
-        reject(new Error('keys not found in cookies: ' + keys.join(', ')));
-      });
-    }
-  }]);
-
-  return CookieStorage;
-}();
-
-exports.CookieStorage = CookieStorage;
-},{"./cookies":"cjA7"}],"Vqkv":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.WebStorage = void 0;
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-var WebStorage = /*#__PURE__*/function () {
-  function WebStorage(type, pfx) {
-    _classCallCheck(this, WebStorage);
-
+class WebStorage {
+  constructor(type, pfx) {
     this.storage = type;
     this.pfx = pfx;
   }
 
-  _createClass(WebStorage, [{
-    key: "browserSupport",
-    value: function browserSupport() {
-      // this is taken from modernizr.
-      var mod = 'modernizr';
+  browserSupport() {
+    // this is taken from modernizr.
+    var mod = 'modernizr';
 
-      try {
-        this.storage.setItem(mod, mod);
-        this.storage.removeItem(mod);
-        return true;
-      } catch (e) {
-        return false;
-      }
+    try {
+      this.storage.setItem(mod, mod);
+      this.storage.removeItem(mod);
+      return true;
+    } catch (e) {
+      return false;
     }
-  }, {
-    key: "setItems",
-    value: function setItems(keys, value) {
-      var _this = this;
+  }
 
-      keys.forEach(function (key) {
-        _this.storage.setItem(_this.pfx + ':' + key, JSON.stringify(value));
+  setItems(keys, value) {
+    keys.forEach(key => {
+      this.storage.setItem(this.pfx + ':' + key, JSON.stringify(value));
+    });
+    return Promise.resolve(true);
+  }
+
+  removeItems(keys) {
+    keys.forEach(key => {
+      this.storage.removeItem(this.pfx + ':' + key);
+    });
+    return Promise.resolve(true);
+  }
+
+  getFirst(keys) {
+    return new Promise((resolve, reject) => {
+      keys.forEach(key => {
+        var v = this.storage.getItem(this.pfx + ':' + key);
+
+        if (v !== null) {
+          resolve(JSON.parse(v));
+        }
       });
-      return Promise.resolve(true);
-    }
-  }, {
-    key: "removeItems",
-    value: function removeItems(keys) {
-      var _this2 = this;
+      reject(new Error('keys not found in storage: ' + keys.join(', ')));
+    });
+  }
 
-      keys.forEach(function (key) {
-        _this2.storage.removeItem(_this2.pfx + ':' + key);
-      });
-      return Promise.resolve(true);
-    }
-  }, {
-    key: "getFirst",
-    value: function getFirst(keys) {
-      var _this3 = this;
+}
 
-      return new Promise(function (resolve, reject) {
-        keys.forEach(function (key) {
-          var v = _this3.storage.getItem(_this3.pfx + ':' + key);
-
-          if (v !== null) {
-            resolve(JSON.parse(v));
-          }
-        });
-        reject(new Error('keys not found in storage: ' + keys.join(', ')));
-      });
-    }
-  }]);
-
-  return WebStorage;
-}();
-
-exports.WebStorage = WebStorage;
-},{}],"Tl9z":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.defaults = void 0;
-var defaults = {
+const defaults = {
   prefix: 'formPrefill',
-  storageKeys: function storageKeys() {
+  storageKeys: function () {
     return {
       read: 'key',
       write: 'key'
@@ -356,28 +163,9 @@ var defaults = {
   cookieDomain: '',
   cookieMaxAge: Infinity
 };
-exports.defaults = defaults;
-},{}],"bRBO":[function(require,module,exports) {
-"use strict";
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.Stores = void 0;
-
-var _CookieStorage = require("./CookieStorage");
-
-var _WebStorage = require("./WebStorage");
-
-var _defaults = require("./defaults");
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-var $ = jQuery;
+/* global jQuery */
+const $ = jQuery;
 
 function prefixArray(prefix, arr) {
   for (var i = 0, j = arr.length; i < j; i++) {
@@ -404,135 +192,112 @@ function getStorage(storageName) {
   return storage;
 }
 
-var Stores = /*#__PURE__*/function () {
-  _createClass(Stores, null, [{
-    key: "fromSettings",
-    value: function fromSettings(settings) {
-      settings = $.extend({}, _defaults.defaults, settings);
-      var stores = $.extend(true, [], settings.stores);
+class Stores {
+  static fromSettings(settings) {
+    settings = $.extend({}, defaults, settings);
+    const stores = $.extend(true, [], settings.stores);
 
-      if (settings.useSessionStore) {
-        var _sessionStorage = getStorage('sessionStorage');
+    if (settings.useSessionStore) {
+      const _sessionStorage = getStorage('sessionStorage');
 
-        if (_sessionStorage) {
-          var s = new _WebStorage.WebStorage(_sessionStorage, settings.prefix);
+      if (_sessionStorage) {
+        const s = new WebStorage(_sessionStorage, settings.prefix);
 
-          if (s.browserSupport()) {
-            stores.push(s);
-          }
+        if (s.browserSupport()) {
+          stores.push(s);
         }
       }
-
-      if (settings.useLocalStore) {
-        var _localStorage = getStorage('localStorage');
-
-        if (_localStorage) {
-          var _s = new _WebStorage.WebStorage(_localStorage, settings.prefix);
-
-          if (_s.browserSupport()) {
-            stores.push(_s);
-          }
-        }
-      }
-
-      if (settings.useCookies) {
-        stores.push(new _CookieStorage.CookieStorage(settings.prefix, settings.cookieDomain, settings.cookieMaxAge));
-      }
-
-      return new this(stores, settings.stringPrefix, settings.listPrefix);
     }
-  }]);
 
-  function Stores(stores, stringPrefix, listPrefix) {
-    _classCallCheck(this, Stores);
+    if (settings.useLocalStore) {
+      const _localStorage = getStorage('localStorage');
 
+      if (_localStorage) {
+        const s = new WebStorage(_localStorage, settings.prefix);
+
+        if (s.browserSupport()) {
+          stores.push(s);
+        }
+      }
+    }
+
+    if (settings.useCookies) {
+      stores.push(new CookieStorage(settings.prefix, settings.cookieDomain, settings.cookieMaxAge));
+    }
+
+    return new this(stores, settings.stringPrefix, settings.listPrefix);
+  }
+
+  constructor(stores, stringPrefix, listPrefix) {
     this.stores = stores;
     this.stringPrefix = stringPrefix;
     this.listPrefix = listPrefix;
   }
 
-  _createClass(Stores, [{
-    key: "setItems",
-    value: function setItems(keys, value) {
-      var promises = [];
-      this.stores.forEach(function (store, index) {
-        promises.push(store.setItems(keys, value));
-      });
-      return Promise.all(promises);
-    }
-  }, {
-    key: "removeItems",
-    value: function removeItems(keys) {
-      var promises = [];
-      this.stores.forEach(function (store, index) {
-        promises.push(store.removeItems(keys));
-      });
-      return Promise.all(promises);
-    }
-  }, {
-    key: "getFirst",
-    value: function getFirst(keys) {
-      var _this = this;
+  setItems(keys, value) {
+    const promises = [];
+    this.stores.forEach(function (store, index) {
+      promises.push(store.setItems(keys, value));
+    });
+    return Promise.all(promises);
+  }
 
-      // This could use Promise.any() once it is standardized.
-      var promisesRejected = 0;
-      return new Promise(function (resolve, reject) {
-        _this.stores.forEach(function (store, index) {
-          store.getFirst(keys).then(function (value) {
-            resolve(value);
-          }, function (cause) {
-            // Reject only when all of the stores have rejected.
-            if (++promisesRejected === _this.stores.length) {
-              reject(cause);
-            }
-          });
+  removeItems(keys) {
+    const promises = [];
+    this.stores.forEach(function (store, index) {
+      promises.push(store.removeItems(keys));
+    });
+    return Promise.all(promises);
+  }
+
+  getFirst(keys) {
+    // This could use Promise.any() once it is standardized.
+    var promisesRejected = 0;
+    return new Promise((resolve, reject) => {
+      this.stores.forEach((store, index) => {
+        store.getFirst(keys).then(value => {
+          resolve(value);
+        }, cause => {
+          // Reject only when all of the stores have rejected.
+          if (++promisesRejected === this.stores.length) {
+            reject(cause);
+          }
         });
       });
+    });
+  }
+
+  prefix(keys, list) {
+    if (list === void 0) {
+      list = false;
     }
-  }, {
-    key: "prefix",
-    value: function prefix(keys) {
-      var list = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-      prefixArray(list ? this.listPrefix : this.stringPrefix, keys);
-      return keys;
-    }
-  }, {
-    key: "setValuesMap",
-    value: function setValuesMap(vars) {
-      var _this2 = this;
 
-      var promises = [];
-      Object.keys(vars).forEach(function (key) {
-        var values = vars[key];
-        promises.push(_this2.setItems(_this2.prefix([key]), values[values.length - 1]));
-        promises.push(_this2.setItems(_this2.prefix([key], true), values));
-      });
-      return Promise.all(promises);
-    }
-  }]);
+    prefixArray(list ? this.listPrefix : this.stringPrefix, keys);
+    return keys;
+  }
 
-  return Stores;
-}();
+  setValuesMap(vars) {
+    var promises = [];
+    Object.keys(vars).forEach(key => {
+      const values = vars[key];
+      promises.push(this.setItems(this.prefix([key]), values[values.length - 1]));
+      promises.push(this.setItems(this.prefix([key], true), values));
+    });
+    return Promise.all(promises);
+  }
 
-exports.Stores = Stores;
-},{"./CookieStorage":"K3ag","./WebStorage":"Vqkv","./defaults":"Tl9z"}],"epB2":[function(require,module,exports) {
-"use strict";
-
-var _Stores = require("./Stores");
-
-var _WebStorage = require("./WebStorage");
-
-var _defaults = require("./defaults");
+}
 
 /* global jQuery */
+
 (function ($) {
   var privates = {
-    WebStorage: _WebStorage.WebStorage,
-    Stores: _Stores.Stores
+    WebStorage: WebStorage,
+    Stores: Stores
   }; // Expose methods for testing.
   // Util methods:
 
-  _defaults.defaults.storageKeys = privates.storageKeys = function ($e) {
+  defaults.storageKeys = privates.storageKeys = function ($e) {
     var type = $e.attr('type');
     var name = $e.attr('name');
 
@@ -644,7 +409,7 @@ var _defaults = require("./defaults");
   };
 
   var Api = privates.Api = function ($e, stores, settings) {
-    settings = settings || $.extend({}, _defaults.defaults);
+    settings = settings || $.extend({}, defaults);
     this.$element = $e;
     this.stores = stores;
     var type = $e.attr('type');
@@ -686,13 +451,11 @@ var _defaults = require("./defaults");
   };
 
   Api.prototype.read = function () {
-    var _this = this;
-
     var keys = parseAttribute(this.$element.attr('data-form-prefill-read'));
     if (!keys.length) return Promise.reject(new Error('Don’t know which keys to read from.'));
     this.stores.prefix(keys, this.isList());
-    return this.stores.getFirst(keys).then(function (value) {
-      _this.prefill(value);
+    return this.stores.getFirst(keys).then(value => {
+      this.prefill(value);
     });
   };
 
@@ -756,10 +519,8 @@ var _defaults = require("./defaults");
       return privates;
     }
 
-    var settings = $.extend(_defaults.defaults, options);
-
-    var stores = privates.stores = _Stores.Stores.fromSettings(settings);
-
+    var settings = $.extend(defaults, options);
+    var stores = privates.stores = Stores.fromSettings(settings);
     $(document).trigger('form-prefill:stores-initialized', [stores, this]);
     return this.each(function () {
       var $self = $(this);
@@ -782,20 +543,20 @@ var _defaults = require("./defaults");
       }); // This is the form’s api
 
       $self.data('formPrefill', {
-        writeAll: function writeAll() {
+        writeAll: function () {
           var $write = deduplicateSets($inputs);
-          var promises = [];
+          const promises = [];
           $write.each(function () {
             promises.push($(this).data('formPrefill').write());
           });
           return Promise.all(promises);
         },
-        removeAll: function removeAll(options) {
+        removeAll: function (options) {
           options = options || {
             resetFields: true
           };
           var $write = deduplicateSets($inputs);
-          var promises = [];
+          const promises = [];
           $write.each(function () {
             promises.push($(this).data('formPrefill').write({
               delete: true
@@ -820,8 +581,7 @@ var _defaults = require("./defaults");
             $self.trigger('form-prefill:cleared');
           });
         },
-        readAll: function readAll() {
-          var prefilled = [];
+        readAll: function () {
           $inputs.each(function () {
             var $el = $(this);
             $el.data('formPrefill').read().then(function () {
@@ -851,4 +611,4 @@ var _defaults = require("./defaults");
     });
   };
 })(jQuery);
-},{"./Stores":"bRBO","./WebStorage":"Vqkv","./defaults":"Tl9z"}]},{},["epB2"], null)
+//# sourceMappingURL=jquery.formprefill.cjs.map
