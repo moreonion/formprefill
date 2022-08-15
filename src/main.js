@@ -33,14 +33,14 @@ import { defaults } from './defaults'
   }
 
   var parseAttribute = privates.parseAttribute = function (str) {
-    if ($.isArray(str)) return str
+    if (Array.isArray(str)) return str
     if (typeof str === 'string' && str) return str.split(' ')
     return []
   }
 
   var serializeAttribute = privates.serializeAttribute = function (arr) {
     if (typeof arr === 'string') return arr
-    if ($.isArray(arr)) return arr.join(' ')
+    if (Array.isArray(arr)) return arr.join(' ')
     return ''
   }
 
