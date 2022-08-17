@@ -240,11 +240,11 @@ import { defaults } from './defaults'
           return true
         }
         // Check nearest include and exclude-wrapper.
-        var $exclude = $(element.closest(settings.exclude))
-        var $include = $(element.closest(settings.include))
-        if ($exclude.length > 0) {
+        var excludeParent = element.closest(settings.exclude)
+        var includeParent = element.closest(settings.include)
+        if (excludeParent) {
           // Exclude unless there is an include-wrapper inside the exclude wrapper.
-          return $include.length <= 0 || $.contains($include.get(), $exclude.get())
+          return !includeParent || includeParent.contains(excludeParent)
         }
         return false
       })
