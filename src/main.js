@@ -248,12 +248,11 @@ import { defaults } from './defaults'
         }
         return true
       })
-      let $inputs = $(inputs)
 
       // This is the form’s api
       $(this).data('formPrefill', {
         writeAll: function () {
-          var $write = $(deduplicateSets($inputs.get()))
+          var $write = $(deduplicateSets(inputs))
           const promises = []
           $write.each(function () {
             promises.push($(this).data('formPrefill').write())
@@ -262,23 +261,23 @@ import { defaults } from './defaults'
         },
         removeAll: (options) => {
           options = options || { resetFields: true }
-          var $write = $(deduplicateSets($inputs.get()))
+          var $write = $(deduplicateSets(inputs))
           const promises = []
           $write.each(function () {
             promises.push($(this).data('formPrefill').write({ delete: true }))
           })
           return Promise.all(promises).then(() => {
             if (options.resetFields) {
-              $inputs.each(function () {
-                var $field = $(this); var api = $field.data('formPrefill')
-                var type = this.getAttribute('type')
+              Array.prototype.forEach.call(inputs, function (element) {
+                var $field = $(element); var api = $field.data('formPrefill')
+                var type = element.getAttribute('type')
                 if (type === 'radio' || type === 'checkbox') {
                   $field[0].checked = api.initialValue
                 }
                 else {
                   $field.val(api.initialValue)
                 }
-                this.dispatchEvent(new Event('change', {bubbles: true}))
+                element.dispatchEvent(new Event('change', {bubbles: true}))
               })
             }
             this.dispatchEvent(new CustomEvent('form-prefill:cleared', {bubbles: true}))
@@ -286,27 +285,25 @@ import { defaults } from './defaults'
         },
         readAll: function () {
           var prefilled = []
-          $inputs.each(function () {
-            var $el = $(this)
-            $el.data('formPrefill').read().then(function () {
-              $el[0].dispatchEvent(new CustomEvent('form-prefill:prefilled', {bubbles: true}))
+          Array.prototype.forEach.call(inputs, function (element) {
+            $(element).data('formPrefill').read().then(function () {
+              element.dispatchEvent(new CustomEvent('form-prefill:prefilled', {bubbles: true}))
             }, function (cause) {
-              $el[0].dispatchEvent(new CustomEvent('form-prefill:failed', {detail: cause, bubbles: true}))
+              element.dispatchEvent(new CustomEvent('form-prefill:failed', {detail: cause, bubbles: true}))
             })
           })
         }
       })
 
       // Initialize elements api
-      $inputs.each(function () {
-        var $e = $(this)
+      Array.prototype.forEach.call(inputs, function (element) {
+        var $e = $(element)
         var api = new Api($e, stores, settings)
         $e.data('formPrefill', api)
-      })
-
-      // Write to stores on change
-      $inputs.on('change.form-prefill', function () {
-        $(this).data('formPrefill').write().then(function () {}, function () {})
+        // Write to stores on change
+        element.addEventListener('change', () => {
+          api.write().then(function () {}, function () {})
+        })
       })
 
       // Prefill fields when the values passed in the hash are stored.

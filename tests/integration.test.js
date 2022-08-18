@@ -42,7 +42,7 @@ QUnit.test('Exclusion and inclusion of fields', function(assert) {
 QUnit.test('Write value on change', function(assert) {
   var done = assert.async();
   this.$form.formPrefill();
-  this.$fields.filter('[type=checkbox]').eq(0).prop('checked', true).trigger('change');
+  this.$fields.filter('[type=checkbox]').eq(0).prop('checked', true).get(0).dispatchEvent(new Event('change'));
   setTimeout(function() {
     assert.equal(sessionStorage.getItem('formPrefill:l:foo'), '["one","two","three"]');
     sessionStorage.removeItem('formPrefill:l:foo');
@@ -114,8 +114,8 @@ QUnit.test('Only changed values are stored by default', function(assert) {
   this.$form.submit(function(event) { event.preventDefault(); });
   this.$fields[1].checked = true;
   // The change event triggers storing all checkbox values with the same name.
-  this.$fields.eq(1).trigger('change');
-  this.$fields.eq(4).val(['2']).trigger('change');
+  this.$fields.eq(1).get(0).dispatchEvent(new Event('change'));
+  this.$fields.eq(4).val(['2']).get(0).dispatchEvent(new Event('change'));
   this.$form.trigger('submit');
 
   this.$form2.formPrefill();
