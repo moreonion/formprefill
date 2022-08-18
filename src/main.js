@@ -233,24 +233,25 @@ import { defaults } from './defaults'
     document.dispatchEvent(new CustomEvent('form-prefill:stores-initialized', {detail: [stores, this], bubbles: true}))
 
     return this.each(function () {
-      var $self = $(this)
-      var $inputs = $self.find('input, select, textarea, .form-prefill, .form-prefill-list').not(function (i, element) {
+      let inputs = this.querySelectorAll('input, select, textarea, .form-prefill, .form-prefill-list')
+      inputs = Array.prototype.filter.call(inputs, (element) => {
         // Exclude file elements. We can't prefill those.
         if (element.getAttribute('type') === 'file') {
-          return true
+          return false
         }
-        // Check nearest include and exclude-wrapper.
+        // Check nearest include and exclude-wrapper. The innermost counts.
         var excludeParent = element.closest(settings.exclude)
         var includeParent = element.closest(settings.include)
         if (excludeParent) {
           // Exclude unless there is an include-wrapper inside the exclude wrapper.
-          return !includeParent || includeParent.contains(excludeParent)
+          return includeParent && excludeParent.contains(includeParent)
         }
-        return false
+        return true
       })
+      let $inputs = $(inputs)
 
       // This is the form’s api
-      $self.data('formPrefill', {
+      $(this).data('formPrefill', {
         writeAll: function () {
           var $write = $(deduplicateSets($inputs.get()))
           const promises = []
@@ -259,14 +260,14 @@ import { defaults } from './defaults'
           })
           return Promise.all(promises)
         },
-        removeAll: function (options) {
+        removeAll: (options) => {
           options = options || { resetFields: true }
           var $write = $(deduplicateSets($inputs.get()))
           const promises = []
           $write.each(function () {
             promises.push($(this).data('formPrefill').write({ delete: true }))
           })
-          return Promise.all(promises).then(function () {
+          return Promise.all(promises).then(() => {
             if (options.resetFields) {
               $inputs.each(function () {
                 var $field = $(this); var api = $field.data('formPrefill')
@@ -280,7 +281,7 @@ import { defaults } from './defaults'
                 this.dispatchEvent(new Event('change', {bubbles: true}))
               })
             }
-            $self[0].dispatchEvent(new CustomEvent('form-prefill:cleared', {bubbles: true}))
+            this.dispatchEvent(new CustomEvent('form-prefill:cleared', {bubbles: true}))
           })
         },
         readAll: function () {
@@ -309,11 +310,11 @@ import { defaults } from './defaults'
       })
 
       // Prefill fields when the values passed in the hash are stored.
-      $self.on('form-prefill:stores-filled', function () {
-        $self.data('formPrefill').readAll()
-      })
+      this.addEventListener('form-prefill:stores-filled', () => {
+        $(this).data('formPrefill').readAll()
+      }, false)
       // Prefill fields.
-      $self.data('formPrefill').readAll()
+      $(this).data('formPrefill').readAll()
     })
   }
 }(jQuery))
