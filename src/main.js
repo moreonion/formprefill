@@ -252,19 +252,17 @@ import { defaults } from './defaults'
       // This is the form’s api
       $(this).data('formPrefill', {
         writeAll: function () {
-          var $write = $(deduplicateSets(inputs))
           const promises = []
-          $write.each(function () {
-            promises.push($(this).data('formPrefill').write())
+          Array.prototype.forEach.call(deduplicateSets(inputs), function (element) {
+            promises.push($(element).data('formPrefill').write())
           })
           return Promise.all(promises)
         },
         removeAll: (options) => {
           options = options || { resetFields: true }
-          var $write = $(deduplicateSets(inputs))
           const promises = []
-          $write.each(function () {
-            promises.push($(this).data('formPrefill').write({ delete: true }))
+          Array.prototype.forEach.call(deduplicateSets(inputs), function (element) {
+            promises.push($(element).data('formPrefill').write({ delete: true }))
           })
           return Promise.all(promises).then(() => {
             if (options.resetFields) {
