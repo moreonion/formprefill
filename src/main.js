@@ -50,7 +50,7 @@ import { defaults } from './defaults'
     // write attribute to prevent multiple writes to the stores.
     var sets = []
     return Array.prototype.filter.call(elements, function (element) {
-      var keys = element.getAttribute('data-form-prefill-write')
+      var keys = element.dataset.formPrefillWrite
       var type = element.getAttribute('type')
       if (type === 'checkbox' || type === 'radio') {
         if (sets.indexOf(keys) === -1) {
@@ -124,37 +124,37 @@ import { defaults } from './defaults'
     }
 
     // Check for data attributes.
-    if (element.getAttribute('data-form-prefill-keys') !== null) {
+    if (element.dataset.formPrefillKeys !== undefined) {
       // Set data attributes so elements can be found via selector.
       // As the order of write keys is irrelevant, we sort them to make it
       // possible to determine sets of checkboxes via string comparison of their write keys.
-      element.setAttribute('data-form-prefill-read', element.getAttribute('data-form-prefill-keys'))
-      element.setAttribute('data-form-prefill-write', serializeAttribute(parseAttribute(element.getAttribute('data-form-prefill-keys')).sort()))
+      element.dataset.formPrefillRead = element.dataset.formPrefillKeys
+      element.dataset.formPrefillWrite = serializeAttribute(parseAttribute(element.dataset.formPrefillKeys).sort())
     }
-    if (element.getAttribute('data-form-prefill-read') === null &&
-      element.getAttribute('data-form-prefill-write') === null) {
+    if (element.dataset.formPrefillRead === undefined &&
+      element.dataset.formPrefillWrite === undefined) {
       var keys = settings.storageKeys(element)
       if (keys && typeof keys.read !== 'undefined') {
-        element.setAttribute('data-form-prefill-read', serializeAttribute(keys.read))
+        element.dataset.formPrefillRead = serializeAttribute(keys.read)
       }
       if (keys && typeof keys.write !== 'undefined') {
-        element.setAttribute('data-form-prefill-write', serializeAttribute(parseAttribute(keys.write).sort()))
+        element.dataset.formPrefillWrite = serializeAttribute(parseAttribute(keys.write).sort())
       }
     }
     // Add aliases for read keys
     if (!$.isEmptyObject(settings.map)) {
-      var readKeys = parseAttribute(element.getAttribute('data-form-prefill-read')); var aliases = []
+      var readKeys = parseAttribute(element.dataset.formPrefillRead); var aliases = []
       for (var i = 0, j = readKeys.length; i < j; i++) {
         if (readKeys[i] in settings.map) {
           aliases = aliases.concat(settings.map[readKeys[i]])
         }
       }
-      element.setAttribute('data-form-prefill-read', serializeAttribute(readKeys.concat(aliases)))
+      element.dataset.formPrefillRead = serializeAttribute(readKeys.concat(aliases))
     }
   }
 
   Api.prototype.read = function () {
-    var keys = parseAttribute(this.element.getAttribute('data-form-prefill-read'))
+    var keys = parseAttribute(this.element.dataset.formPrefillRead)
     if (!keys.length) return Promise.reject(new Error('Don’t know which keys to read from.'))
     this.stores.prefix(keys, this.isList())
     return this.stores.getFirst(keys).then((value) => {
@@ -163,7 +163,7 @@ import { defaults } from './defaults'
   }
 
   Api.prototype.write = function (options) {
-    var keys = parseAttribute(this.element.getAttribute('data-form-prefill-write'))
+    var keys = parseAttribute(this.element.dataset.formPrefillWrite)
     if (!keys.length) return Promise.reject(new Error('No idea which keys to write to.'))
     this.stores.prefix(keys, this.isList())
     if (options && options.delete === true) {
@@ -184,7 +184,7 @@ import { defaults } from './defaults'
     if (type === 'radio' || type === 'checkbox') {
       // Get the value from all inputs that write to the same keys.
       var selector = ''
-      var writeKeys = this.element.getAttribute('data-form-prefill-write')
+      var writeKeys = this.element.dataset.formPrefillWrite
       if (writeKeys) selector += '[data-form-prefill-write="' + writeKeys + '"]'
       var checked = []
       Array.prototype.forEach.call(this.element.closest('form').querySelectorAll(selector), function (element) {
