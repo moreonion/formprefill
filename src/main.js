@@ -111,46 +111,45 @@ import { defaults } from './defaults'
     return newParts.join(';')
   }
 
-  var Api = privates.Api = function ($e, stores, settings) {
+  var Api = privates.Api = function (element, stores, settings) {
     settings = settings || {...defaults}
-    this.$element = $e
-    this.element = $e.get(0)
+    this.element = element
     this.stores = stores
-    var type = $e[0].getAttribute('type')
+    var type = element.getAttribute('type')
     if (type === 'radio' || type === 'checkbox') {
-      this.initialValue = $e[0].checked
+      this.initialValue = element.checked
     }
     else {
-      this.initialValue = $e.val()
+      this.initialValue = $(element).val()
     }
 
     // Check for data attributes.
-    if ($e[0].getAttribute('data-form-prefill-keys') !== null) {
+    if (element.getAttribute('data-form-prefill-keys') !== null) {
       // Set data attributes so elements can be found via selector.
       // As the order of write keys is irrelevant, we sort them to make it
       // possible to determine sets of checkboxes via string comparison of their write keys.
-      $e[0].setAttribute('data-form-prefill-read', $e[0].getAttribute('data-form-prefill-keys'))
-      $e[0].setAttribute('data-form-prefill-write', serializeAttribute(parseAttribute($e[0].getAttribute('data-form-prefill-keys')).sort()))
+      element.setAttribute('data-form-prefill-read', element.getAttribute('data-form-prefill-keys'))
+      element.setAttribute('data-form-prefill-write', serializeAttribute(parseAttribute(element.getAttribute('data-form-prefill-keys')).sort()))
     }
-    if ($e[0].getAttribute('data-form-prefill-read') === null &&
-      $e[0].getAttribute('data-form-prefill-write') === null) {
-      var keys = settings.storageKeys($e[0])
+    if (element.getAttribute('data-form-prefill-read') === null &&
+      element.getAttribute('data-form-prefill-write') === null) {
+      var keys = settings.storageKeys(element)
       if (keys && typeof keys.read !== 'undefined') {
-        $e[0].setAttribute('data-form-prefill-read', serializeAttribute(keys.read))
+        element.setAttribute('data-form-prefill-read', serializeAttribute(keys.read))
       }
       if (keys && typeof keys.write !== 'undefined') {
-        $e[0].setAttribute('data-form-prefill-write', serializeAttribute(parseAttribute(keys.write).sort()))
+        element.setAttribute('data-form-prefill-write', serializeAttribute(parseAttribute(keys.write).sort()))
       }
     }
     // Add aliases for read keys
     if (!$.isEmptyObject(settings.map)) {
-      var readKeys = parseAttribute($e[0].getAttribute('data-form-prefill-read')); var aliases = []
+      var readKeys = parseAttribute(element.getAttribute('data-form-prefill-read')); var aliases = []
       for (var i = 0, j = readKeys.length; i < j; i++) {
         if (readKeys[i] in settings.map) {
           aliases = aliases.concat(settings.map[readKeys[i]])
         }
       }
-      $e[0].setAttribute('data-form-prefill-read', serializeAttribute(readKeys.concat(aliases)))
+      element.setAttribute('data-form-prefill-read', serializeAttribute(readKeys.concat(aliases)))
     }
   }
 
@@ -176,7 +175,7 @@ import { defaults } from './defaults'
   }
 
   Api.prototype.prefill = function (value) {
-    this.$element.val(value)
+    $(this.element).val(value)
     this.element.dispatchEvent(new Event('change', {bubbles: true}))
   }
 
@@ -187,21 +186,20 @@ import { defaults } from './defaults'
       var selector = ''
       var writeKeys = this.element.getAttribute('data-form-prefill-write')
       if (writeKeys) selector += '[data-form-prefill-write="' + writeKeys + '"]'
-      var $set = $(this.element.closest('form')).find(selector)
       var checked = []
-      $set.each(function () {
-        if (this.checked) checked.push(this.value)
+      Array.prototype.forEach.call(this.element.closest('form').querySelectorAll(selector), function (element) {
+        if (element.checked) checked.push(element.value)
       })
       return checked
     }
     else {
-      return this.$element.val()
+      return $(this.element).val()
     }
   }
 
   Api.prototype.isList = function () {
     var type = this.element.getAttribute('type')
-    return type === 'checkbox' || type === 'radio' || this.$element.is('select[multiple]') || this.$element.is('.form-prefill-list')
+    return type === 'checkbox' || type === 'radio' || this.element.matches('select[multiple]') || this.element.matches('.form-prefill-list')
   }
 
   document.addEventListener('form-prefill:stores-initialized', function (event) {
@@ -295,9 +293,8 @@ import { defaults } from './defaults'
 
       // Initialize elements api
       Array.prototype.forEach.call(inputs, function (element) {
-        var $e = $(element)
-        var api = new Api($e, stores, settings)
-        $e.data('formPrefill', api)
+        var api = new Api(element, stores, settings)
+        $(element).data('formPrefill', api)
         // Write to stores on change
         element.addEventListener('change', () => {
           api.write().then(function () {}, function () {})

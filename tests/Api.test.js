@@ -15,21 +15,21 @@ QUnit.module('Api', {
 
 QUnit.test('init with data-form-prefill-keys, sort write keys', function(assert) {
   var $input = $('<input type="text" data-form-prefill-keys="foo bar" name="submitted[first_name]">').appendTo(this.$form);
-  var api = new this.Api($input);
+  var api = new this.Api($input[0]);
   assert.equal($input.data('form-prefill-read'), 'foo bar');
   assert.equal($input.data('form-prefill-write'), 'bar foo');
 });
 
 QUnit.test('init with data-form-prefill-read', function(assert) {
   var $input = $('<input type="text" data-form-prefill-read="foo bar" name="submitted[first_name]">').appendTo(this.$form);
-  var api = new this.Api($input);
+  var api = new this.Api($input[0]);
   assert.equal($input.data('form-prefill-read'), 'foo bar');
   assert.equal($input.data('form-prefill-write'), undefined);
 });
 
 QUnit.test('init with data-form-prefill-read and a map', function(assert) {
   var $input = $('<input type="text" data-form-prefill-keys="first_name your_name" name="submitted[first_name]">').appendTo(this.$form);
-  var api = new this.Api($input, [], {
+  var api = new this.Api($input[0], [], {
     map: {
       first_name: ['firstname', 'firstName', 'fname']
     }
@@ -40,14 +40,14 @@ QUnit.test('init with data-form-prefill-read and a map', function(assert) {
 
 QUnit.test('init with data-form-prefill-write', function(assert) {
   var $input = $('<input type="text" data-form-prefill-write="foo bar" name="submitted[first_name]">').appendTo(this.$form);
-  var api = new this.Api($input);
+  var api = new this.Api($input[0]);
   assert.equal($input.data('form-prefill-read'), undefined);
   assert.equal($input.data('form-prefill-write'), 'foo bar');
 });
 
 QUnit.test('init without data attribute', function(assert) {
   var $input = $('<input type="text" name="submitted[first_name]">').appendTo(this.$form);
-  var api = new this.Api($input);
+  var api = new this.Api($input[0]);
   assert.equal($input.data('form-prefill-read'), 'first_name');
   assert.equal($input.data('form-prefill-write'), 'first_name');
 });
@@ -58,7 +58,7 @@ QUnit.test('read', function(assert) {
   var done = assert.async();
   var store1 = new Store(), store2 = new Store();
   var $input = $('<input type="text" data-form-prefill-read="foo bar">').appendTo(this.$form);
-  var api = new this.Api($input, this.privates.Stores.fromSettings({stores: [store1, store2]}));
+  var api = new this.Api($input[0], this.privates.Stores.fromSettings({stores: [store1, store2]}));
   store2.setItems(['s:bar'], 'baz');
   api.read().then(function(value) {
     assert.equal($input.val(), 'baz');
@@ -70,7 +70,7 @@ QUnit.test('write', function(assert) {
   var done = assert.async();
   var store1 = new Store(), store2 = new Store();
   var $input = $('<input type="text" data-form-prefill-write="foo bar">').val('baz').appendTo(this.$form);
-  var api = new this.Api($input, this.privates.Stores.fromSettings({stores: [store1, store2]}));
+  var api = new this.Api($input[0], this.privates.Stores.fromSettings({stores: [store1, store2]}));
   api.write().then(function() {
     assert.equal(store1.data['s:foo'], 'baz');
     assert.equal(store1.data['s:bar'], 'baz');
@@ -82,14 +82,14 @@ QUnit.test('write', function(assert) {
 
 QUnit.test('prefill a text field', function(assert) {
   var $field = $('<input type="text">').appendTo(this.$form);
-  var api = new this.Api($field);
+  var api = new this.Api($field[0]);
   api.prefill('foo');
   assert.equal($field.val(), 'foo');
 });
 
 QUnit.test('prefill a select field', function(assert) {
   var $field = $('<select><option value="1">one</option><option value="2">two</option><option value="3">three</option></select>').appendTo(this.$form);
-  var api = new this.Api($field);
+  var api = new this.Api($field[0]);
   api.prefill('2');
   assert.equal($field.children()[0].selected, false);
   assert.equal($field.children()[1].selected, true);
@@ -98,7 +98,7 @@ QUnit.test('prefill a select field', function(assert) {
 
 QUnit.test('prefill a multiselect field', function(assert) {
   var $field = $('<select multiple><option value="1">one</option><option value="2">two</option><option value="3">three</option></select>').appendTo(this.$form);
-  var api = new this.Api($field);
+  var api = new this.Api($field[0]);
   api.prefill(['2', '3']);
   assert.equal($field.children()[0].selected, false);
   assert.equal($field.children()[1].selected, true);
@@ -109,7 +109,7 @@ QUnit.test('prefill a set of checkboxes', function(assert) {
   var self = this;
   var $fields = $('<input checked value="one" type="checkbox"><input value="two" type="checkbox"><input value="three" type="checkbox">').appendTo(this.$form);
   $fields.each(function() {
-    var api = new self.Api($(this));
+    var api = new self.Api(this);
     api.prefill(['two', 'three']);
   });
   assert.equal($fields[0].checked, false);
@@ -121,7 +121,7 @@ QUnit.test('prefill a set of radios', function(assert) {
   var self = this;
   var $fields = $('<input checked value="one" type="radio"><input value="two" type="radio"><input value="three" type="radio">').appendTo(this.$form);
   $fields.each(function() {
-    var api = new self.Api($(this));
+    var api = new self.Api(this);
     api.prefill(['two', 'three']);
   });
   assert.equal($fields[0].checked, false);
@@ -133,7 +133,7 @@ QUnit.test('getVal from a set of checkboxes', function(assert) {
   var self = this;
   var $fields = $('<input value="one" data-form-prefill-keys="foo" type="checkbox"><input checked value="two" data-form-prefill-keys="foo" type="checkbox"><input checked value="three" data-form-prefill-keys="foo" type="checkbox"><input value="four" data-form-prefill-keys="bar" type="checkbox">').appendTo(this.$form);
   $fields.each(function() {
-    $(this).data('formPrefill', new self.Api($(this)));
+    $(this).data('formPrefill', new self.Api(this));
   });
   var r = $fields.eq(0).data('formPrefill').getVal();
   assert.deepEqual(r, ['two', 'three']);
