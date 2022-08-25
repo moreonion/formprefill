@@ -3,6 +3,7 @@
 import { Stores } from './Stores'
 import { WebStorage } from './WebStorage'
 import { defaults } from './defaults'
+import * as val from './val'
 
 (function ($) {
   var privates = {
@@ -120,7 +121,7 @@ import { defaults } from './defaults'
       this.initialValue = element.checked
     }
     else {
-      this.initialValue = $(element).val()
+      this.initialValue = val.get(element)
     }
 
     // Check for data attributes.
@@ -175,7 +176,7 @@ import { defaults } from './defaults'
   }
 
   Api.prototype.prefill = function (value) {
-    $(this.element).val(value)
+    val.set(this.element, value)
     this.element.dispatchEvent(new Event('change', {bubbles: true}))
   }
 
@@ -193,7 +194,7 @@ import { defaults } from './defaults'
       return checked
     }
     else {
-      return $(this.element).val()
+      return val.get(this.element)
     }
   }
 
@@ -266,13 +267,13 @@ import { defaults } from './defaults'
           return Promise.all(promises).then(() => {
             if (options.resetFields) {
               Array.prototype.forEach.call(inputs, function (element) {
-                var $field = $(element); var api = apiElements.get(element)
+                var api = apiElements.get(element)
                 var type = element.getAttribute('type')
                 if (type === 'radio' || type === 'checkbox') {
-                  $field[0].checked = api.initialValue
+                  element.checked = api.initialValue
                 }
                 else {
-                  $field.val(api.initialValue)
+                  val.set(element, api.initialValue)
                 }
                 element.dispatchEvent(new Event('change', {bubbles: true}))
               })
