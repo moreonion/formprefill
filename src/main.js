@@ -111,96 +111,95 @@ var readUrlVars = privates.readUrlVars = function (hash, stores) {
   return newParts.join(';')
 }
 
-var Api = privates.Api = function (element, stores, settings) {
-  settings = settings || {...defaults}
-  this.element = element
-  this.stores = stores
-  var type = element.getAttribute('type')
-  if (type === 'radio' || type === 'checkbox') {
-    this.initialValue = element.checked
-  }
-  else {
-    this.initialValue = val.get(element)
-  }
+class Api {
+  constructor (element, stores, settings) {
+    settings = settings || {...defaults}
+    this.element = element
+    this.stores = stores
+    var type = element.getAttribute('type')
+    if (type === 'radio' || type === 'checkbox') {
+      this.initialValue = element.checked
+    }
+    else {
+      this.initialValue = val.get(element)
+    }
 
-  // Check for data attributes.
-  if (element.dataset.formPrefillKeys !== undefined) {
-    // Set data attributes so elements can be found via selector.
-    // As the order of write keys is irrelevant, we sort them to make it
-    // possible to determine sets of checkboxes via string comparison of their write keys.
-    element.dataset.formPrefillRead = element.dataset.formPrefillKeys
-    element.dataset.formPrefillWrite = serializeAttribute(parseAttribute(element.dataset.formPrefillKeys).sort())
-  }
-  if (element.dataset.formPrefillRead === undefined &&
-    element.dataset.formPrefillWrite === undefined) {
-    var keys = settings.storageKeys(element)
-    if (keys && typeof keys.read !== 'undefined') {
-      element.dataset.formPrefillRead = serializeAttribute(keys.read)
+    // Check for data attributes.
+    if (element.dataset.formPrefillKeys !== undefined) {
+      // Set data attributes so elements can be found via selector.
+      // As the order of write keys is irrelevant, we sort them to make it
+      // possible to determine sets of checkboxes via string comparison of their write keys.
+      element.dataset.formPrefillRead = element.dataset.formPrefillKeys
+      element.dataset.formPrefillWrite = serializeAttribute(parseAttribute(element.dataset.formPrefillKeys).sort())
     }
-    if (keys && typeof keys.write !== 'undefined') {
-      element.dataset.formPrefillWrite = serializeAttribute(parseAttribute(keys.write).sort())
-    }
-  }
-  // Add aliases for read keys
-  if (!$.isEmptyObject(settings.map)) {
-    var readKeys = parseAttribute(element.dataset.formPrefillRead); var aliases = []
-    for (var i = 0, j = readKeys.length; i < j; i++) {
-      if (readKeys[i] in settings.map) {
-        aliases = aliases.concat(settings.map[readKeys[i]])
+    if (element.dataset.formPrefillRead === undefined &&
+      element.dataset.formPrefillWrite === undefined) {
+      var keys = settings.storageKeys(element)
+      if (keys && typeof keys.read !== 'undefined') {
+        element.dataset.formPrefillRead = serializeAttribute(keys.read)
+      }
+      if (keys && typeof keys.write !== 'undefined') {
+        element.dataset.formPrefillWrite = serializeAttribute(parseAttribute(keys.write).sort())
       }
     }
-    element.dataset.formPrefillRead = serializeAttribute(readKeys.concat(aliases))
+    // Add aliases for read keys
+    if (!$.isEmptyObject(settings.map)) {
+      var readKeys = parseAttribute(element.dataset.formPrefillRead); var aliases = []
+      for (var i = 0, j = readKeys.length; i < j; i++) {
+        if (readKeys[i] in settings.map) {
+          aliases = aliases.concat(settings.map[readKeys[i]])
+        }
+      }
+      element.dataset.formPrefillRead = serializeAttribute(readKeys.concat(aliases))
+    }
   }
-}
-
-Api.prototype.read = function () {
-  var keys = parseAttribute(this.element.dataset.formPrefillRead)
-  if (!keys.length) return Promise.reject(new Error('Don’t know which keys to read from.'))
-  this.stores.prefix(keys, this.isList())
-  return this.stores.getFirst(keys).then((value) => {
-    this.prefill(value)
-  })
-}
-
-Api.prototype.write = function (options) {
-  var keys = parseAttribute(this.element.dataset.formPrefillWrite)
-  if (!keys.length) return Promise.reject(new Error('No idea which keys to write to.'))
-  this.stores.prefix(keys, this.isList())
-  if (options && options.delete === true) {
-    return this.stores.removeItems(keys)
-  }
-  else {
-    return this.stores.setItems(keys, this.getVal())
-  }
-}
-
-Api.prototype.prefill = function (value) {
-  val.set(this.element, value)
-  this.element.dispatchEvent(new Event('change', {bubbles: true}))
-}
-
-Api.prototype.getVal = function () {
-  var type = this.element.getAttribute('type')
-  if (type === 'radio' || type === 'checkbox') {
-    // Get the value from all inputs that write to the same keys.
-    var selector = ''
-    var writeKeys = this.element.dataset.formPrefillWrite
-    if (writeKeys) selector += '[data-form-prefill-write="' + writeKeys + '"]'
-    var checked = []
-    Array.prototype.forEach.call(this.element.closest('form').querySelectorAll(selector), function (element) {
-      if (element.checked) checked.push(element.value)
+  read () {
+    var keys = parseAttribute(this.element.dataset.formPrefillRead)
+    if (!keys.length) return Promise.reject(new Error('Don’t know which keys to read from.'))
+    this.stores.prefix(keys, this.isList())
+    return this.stores.getFirst(keys).then((value) => {
+      this.prefill(value)
     })
-    return checked
   }
-  else {
-    return val.get(this.element)
+  write (options) {
+    var keys = parseAttribute(this.element.dataset.formPrefillWrite)
+    if (!keys.length) return Promise.reject(new Error('No idea which keys to write to.'))
+    this.stores.prefix(keys, this.isList())
+    if (options && options.delete === true) {
+      return this.stores.removeItems(keys)
+    }
+    else {
+      return this.stores.setItems(keys, this.getVal())
+    }
+  }
+  prefill (value) {
+    val.set(this.element, value)
+    this.element.dispatchEvent(new Event('change', {bubbles: true}))
+  }
+  getVal () {
+    var type = this.element.getAttribute('type')
+    if (type === 'radio' || type === 'checkbox') {
+      // Get the value from all inputs that write to the same keys.
+      var selector = ''
+      var writeKeys = this.element.dataset.formPrefillWrite
+      if (writeKeys) selector += '[data-form-prefill-write="' + writeKeys + '"]'
+      var checked = []
+      Array.prototype.forEach.call(this.element.closest('form').querySelectorAll(selector), function (element) {
+        if (element.checked) checked.push(element.value)
+      })
+      return checked
+    }
+    else {
+      return val.get(this.element)
+    }
+  }
+  isList () {
+    var type = this.element.getAttribute('type')
+    return type === 'checkbox' || type === 'radio' || this.element.matches('select[multiple]') || this.element.matches('.form-prefill-list')
   }
 }
 
-Api.prototype.isList = function () {
-  var type = this.element.getAttribute('type')
-  return type === 'checkbox' || type === 'radio' || this.element.matches('select[multiple]') || this.element.matches('.form-prefill-list')
-}
+privates.Api = Api
 
 document.addEventListener('form-prefill:stores-initialized', function (event) {
   var hash = window.location.hash.substr(1)
