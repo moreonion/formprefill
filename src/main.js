@@ -220,20 +220,15 @@ import * as val from './val'
     )
   })
 
-  $.fn.formPrefill = function (options) {
-    // Make private methods testable.
-    if (options === 'privates') {
-      return privates
-    }
-
+  function formPrefill(wrapperElements, options) {
     var settings = {...defaults, ...options}
 
     var stores = privates.stores = Stores.fromSettings(settings)
     document.dispatchEvent(new CustomEvent('form-prefill:stores-initialized', {detail: [stores, this], bubbles: true}))
     let apiElements = new WeakMap()
 
-    this.each(function () {
-      let inputs = this.querySelectorAll('input, select, textarea, .form-prefill, .form-prefill-list')
+    Array.prototype.forEach.call(wrapperElements, function (wrapperElement) {
+      let inputs = wrapperElement.querySelectorAll('input, select, textarea, .form-prefill, .form-prefill-list')
       inputs = Array.prototype.filter.call(inputs, (element) => {
         // Exclude file elements. We can't prefill those.
         if (element.getAttribute('type') === 'file') {
@@ -250,7 +245,7 @@ import * as val from './val'
       })
 
       // This is the form’s api
-      apiElements.set(this, {
+      apiElements.set(wrapperElement, {
         writeAll: function () {
           const promises = []
           Array.prototype.forEach.call(deduplicateSets(inputs), function (element) {
@@ -278,7 +273,7 @@ import * as val from './val'
                 element.dispatchEvent(new Event('change', {bubbles: true}))
               })
             }
-            this.dispatchEvent(new CustomEvent('form-prefill:cleared', {bubbles: true}))
+            wrapperElement.dispatchEvent(new CustomEvent('form-prefill:cleared', {bubbles: true}))
           })
         },
         readAll: function () {
@@ -304,12 +299,20 @@ import * as val from './val'
       })
 
       // Prefill fields when the values passed in the hash are stored.
-      this.addEventListener('form-prefill:stores-filled', () => {
-        apiElements.get(this).readAll()
+      wrapperElement.addEventListener('form-prefill:stores-filled', () => {
+        apiElements.get(wrapperElement).readAll()
       }, false)
       // Prefill fields.
-      apiElements.get(this).readAll()
+      apiElements.get(wrapperElement).readAll()
     })
     return apiElements
+  }
+
+  $.fn.formPrefill = function (options) {
+    // Make private methods testable.
+    if (options === 'privates') {
+      return privates
+    }
+    return formPrefill(this.get(), options)
   }
 }(jQuery))
