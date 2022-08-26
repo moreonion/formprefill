@@ -312,6 +312,8 @@ function formPrefill(wrapperElements, options) {
 
 export {
   Api,
+  Stores,
+  WebStorage,
   formPrefill,
   readUrlVars,
   storageKeys,

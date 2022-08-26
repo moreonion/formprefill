@@ -1,7 +1,8 @@
+import { WebStorage } from "../dist/jquery.formprefill.formprefill.js";
+
 QUnit.module('LocalStorage', {
   before: function() {
-    var privates = $.fn.formPrefill('privates');
-    this.store = new privates.WebStorage(localStorage, 'myprefix');
+    this.store = new WebStorage(localStorage, 'myprefix');
   }
 });
 

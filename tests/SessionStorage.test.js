@@ -1,7 +1,8 @@
+import { WebStorage } from "../dist/jquery.formprefill.formprefill.js";
+
 QUnit.module('SessionStorage', {
   before: function() {
-    var privates = $.fn.formPrefill('privates');
-    this.store = new privates.WebStorage(sessionStorage, 'myprefix');
+    this.store = new WebStorage(sessionStorage, 'myprefix');
   }
 });
 

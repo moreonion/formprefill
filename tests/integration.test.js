@@ -1,3 +1,5 @@
+import { formPrefill } from "../dist/jquery.formprefill.formprefill.js";
+
 QUnit.module('Integration', {
   before: function() {
     this.$fixture = $('#qunit-fixture');
@@ -29,7 +31,7 @@ QUnit.test('Exclusion and inclusion of fields', function(assert) {
   var $excluded = $('<div data-form-prefill-exclude></div>').appendTo(this.$form);
   var $excludedField = $('<input type="text" data-form-prefill-keys="nickname">').appendTo($excluded);
   var $includedField = $('<select data-form-prefill-include name="myform[personal_data][favourite_pet][]"><option value="cat">Cat</option><option value="dog">Dog</option></select>').appendTo($excluded);
-  var apiElements = $.fn.formPrefill.call(this.$form);
+  var apiElements = formPrefill(this.$form.get());
   this.$form.find('*:not(option)').each(function() {
     if (this === $excluded[0] || this === $excludedField[0]) {
       assert.equal(apiElements.get(this), null);
@@ -41,7 +43,7 @@ QUnit.test('Exclusion and inclusion of fields', function(assert) {
 
 QUnit.test('Write value on change', function(assert) {
   var done = assert.async();
-  $.fn.formPrefill.call(this.$form);
+  formPrefill(this.$form.get());
   this.$fields.filter('[type=checkbox]').eq(0).prop('checked', true).get(0).dispatchEvent(new Event('change'));
   setTimeout(function() {
     assert.equal(sessionStorage.getItem('formPrefill:l:foo'), '["one","two","three"]');
@@ -52,7 +54,7 @@ QUnit.test('Write value on change', function(assert) {
 
 QUnit.test('Write all values', function(assert) {
   var done = assert.async();
-  var apiElements = $.fn.formPrefill.call(this.$form);
+  var apiElements = formPrefill(this.$form.get());
   this.$fields.filter('[type=text]').val('Miranda');
   this.$fields.filter('select').val('1');
   apiElements.get(this.$form[0]).writeAll().then(function () {
@@ -68,7 +70,7 @@ QUnit.test('Write all values', function(assert) {
 
 QUnit.test('Remove all values and trigger event', function(assert) {
   var self = this, done = assert.async();
-  var apiElements = $.fn.formPrefill.call(this.$form);
+  var apiElements = formPrefill(this.$form.get());
   var api = apiElements.get(this.$form[0])
   this.$fields.filter('[type=text]').val('Miranda');
   this.$fields.filter('select').val('1');
@@ -91,7 +93,7 @@ QUnit.test('Read all values and trigger events for each field', function(assert)
   sessionStorage.setItem('formPrefill:s:first_name', '"Miranda"');
   sessionStorage.setItem('formPrefill:l:foo', '["one"]');
   sessionStorage.setItem('formPrefill:l:age', '["3"]');
-  $.fn.formPrefill.call(this.$form);
+  formPrefill(this.$form.get());
   this.$form.on('form-prefill:prefilled', function(data) {
     assert.notEqual(typeof data, 'undefined');
   });
@@ -111,7 +113,7 @@ QUnit.test('Read all values and trigger events for each field', function(assert)
 
 QUnit.test('Only changed values are stored by default', function(assert) {
   var self = this,   done = assert.async();
-  $.fn.formPrefill.call(this.$form);
+  formPrefill(this.$form.get());
   this.$form.submit(function(event) { event.preventDefault(); });
   this.$fields[1].checked = true;
   // The change event triggers storing all checkbox values with the same name.
@@ -119,7 +121,7 @@ QUnit.test('Only changed values are stored by default', function(assert) {
   this.$fields.eq(4).val(['2']).get(0).dispatchEvent(new Event('change'));
   this.$form.trigger('submit');
 
-  $.fn.formPrefill.call(this.$form2);
+  formPrefill(this.$form2.get());
   setTimeout(function() {
     assert.equal(self.$fields2.eq(0).val(), 'first');
     assert.equal(self.$fields2[1].checked, true);
