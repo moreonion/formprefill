@@ -1,5 +1,3 @@
-/* global jQuery */
-
 import { Stores } from './Stores'
 import { WebStorage } from './WebStorage'
 import { defaults } from './defaults'
@@ -299,16 +297,6 @@ function formPrefill(wrapperElements, options) {
   })
   return apiElements
 }
-
-(function ($) {
-  $.fn.formPrefill = function (options) {
-    // Make private methods testable.
-    if (options === 'privates') {
-      return privates
-    }
-    return formPrefill(this.get(), options)
-  }
-}(jQuery))
 
 export {
   Api,

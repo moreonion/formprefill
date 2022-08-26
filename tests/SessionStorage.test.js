@@ -1,4 +1,4 @@
-import { WebStorage } from "../dist/jquery.formprefill.formprefill.js";
+import { WebStorage } from "../dist/formprefill.js";
 
 QUnit.module('SessionStorage', {
   before: function() {

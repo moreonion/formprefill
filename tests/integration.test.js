@@ -1,4 +1,4 @@
-import { formPrefill } from "../dist/jquery.formprefill.formprefill.js";
+import { formPrefill } from "../dist/formprefill.js";
 
 QUnit.module('Integration', {
   before: function() {

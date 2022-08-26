@@ -1,4 +1,4 @@
-import { readUrlVars, storageKeys, Stores } from "../dist/jquery.formprefill.formprefill.js";
+import { readUrlVars, storageKeys, Stores } from "../dist/formprefill.js";
 
 QUnit.module('utils', {
   before: function() {

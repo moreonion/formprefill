@@ -1,4 +1,4 @@
-import { Api, Stores } from "../dist/jquery.formprefill.formprefill.js";
+import { Api, Stores } from "../dist/formprefill.js";
 
 QUnit.module('Api', {
   before: function() {
