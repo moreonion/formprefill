@@ -12,7 +12,7 @@ var privates = {
 
 // Util methods:
 
-defaults.storageKeys = privates.storageKeys = function (element) {
+let storageKeys = defaults.storageKeys = privates.storageKeys = function (element) {
   var type = element.getAttribute('type')
   var name = element.getAttribute('name')
   if (!name) {
@@ -309,3 +309,10 @@ function formPrefill(wrapperElements, options) {
     return formPrefill(this.get(), options)
   }
 }(jQuery))
+
+export {
+  Api,
+  formPrefill,
+  readUrlVars,
+  storageKeys,
+}
