@@ -143,15 +143,9 @@ class Api {
       }
     }
     // Add aliases for read keys
-    if (!$.isEmptyObject(settings.map)) {
-      var readKeys = parseAttribute(element.dataset.formPrefillRead); var aliases = []
-      for (var i = 0, j = readKeys.length; i < j; i++) {
-        if (readKeys[i] in settings.map) {
-          aliases = aliases.concat(settings.map[readKeys[i]])
-        }
-      }
-      element.dataset.formPrefillRead = serializeAttribute(readKeys.concat(aliases))
-    }
+    let readKeys = parseAttribute(element.dataset.formPrefillRead)
+    let aliases = Array.prototype.concat.apply([], readKeys.map((key) => settings.map[key] || []))
+    element.dataset.formPrefillRead = serializeAttribute(readKeys.concat(aliases))
   }
   read () {
     var keys = parseAttribute(this.element.dataset.formPrefillRead)
