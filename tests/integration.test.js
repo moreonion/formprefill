@@ -1,4 +1,4 @@
-import { formPrefill } from "../dist/formprefill.js";
+import { apiRegistry, formPrefill } from "../dist/formprefill.js";
 
 QUnit.module('Integration', {
   before: function() {
@@ -31,12 +31,12 @@ QUnit.test('Exclusion and inclusion of fields', function(assert) {
   var $excluded = $('<div data-form-prefill-exclude></div>').appendTo(this.$form);
   var $excludedField = $('<input type="text" data-form-prefill-keys="nickname">').appendTo($excluded);
   var $includedField = $('<select data-form-prefill-include name="myform[personal_data][favourite_pet][]"><option value="cat">Cat</option><option value="dog">Dog</option></select>').appendTo($excluded);
-  var apiElements = formPrefill(this.$form[0]);
+  formPrefill(this.$form[0]);
   this.$form.find('*:not(option)').each(function() {
     if (this === $excluded[0] || this === $excludedField[0]) {
-      assert.equal(apiElements.get(this), null);
+      assert.equal(apiRegistry.get(this), null);
     } else {
-      assert.notEqual(apiElements.get(this), null);
+      assert.notEqual(apiRegistry.get(this), null);
     }
   });
 });
@@ -54,10 +54,10 @@ QUnit.test('Write value on change', function(assert) {
 
 QUnit.test('Write all values', function(assert) {
   var done = assert.async();
-  var apiElements = formPrefill(this.$form[0]);
+  var api = formPrefill(this.$form[0]);
   this.$fields.filter('[type=text]').val('Miranda');
   this.$fields.filter('select').val('1');
-  apiElements.get(this.$form[0]).writeAll().then(function () {
+  api.writeAll().then(function () {
     assert.equal(sessionStorage.getItem('formPrefill:s:first_name'), '"Miranda"');
     assert.equal(sessionStorage.getItem('formPrefill:l:foo'), '["two","three"]');
     assert.equal(sessionStorage.getItem('formPrefill:l:age'), '["1"]');
@@ -70,8 +70,7 @@ QUnit.test('Write all values', function(assert) {
 
 QUnit.test('Remove all values and trigger event', function(assert) {
   var self = this, done = assert.async();
-  var apiElements = formPrefill(this.$form[0]);
-  var api = apiElements.get(this.$form[0])
+  var api = formPrefill(this.$form[0]);
   this.$fields.filter('[type=text]').val('Miranda');
   this.$fields.filter('select').val('1');
   api.writeAll().then(function () {

@@ -202,12 +202,13 @@ document.addEventListener('form-prefill:stores-initialized', function (event) {
   )
 })
 
+const apiRegistry = new WeakMap()
+
 function formPrefill(wrapperElement, options) {
   var settings = {...defaults, ...options}
 
   var stores = Stores.fromSettings(settings)
   document.dispatchEvent(new CustomEvent('form-prefill:stores-initialized', {detail: [stores, this], bubbles: true}))
-  let apiElements = new WeakMap()
 
   let inputs = wrapperElement.querySelectorAll('input, select, textarea, .form-prefill, .form-prefill-list')
   inputs = [...inputs].filter((element) => {
@@ -226,20 +227,20 @@ function formPrefill(wrapperElement, options) {
   })
 
   // This is the form’s api
-  apiElements.set(wrapperElement, {
+  apiRegistry.set(wrapperElement, {
     writeAll: function () {
       return Promise.all(
-        deduplicateSets(inputs).map((element) => apiElements.get(element).write())
+        deduplicateSets(inputs).map((element) => apiRegistry.get(element).write())
       )
     },
     removeAll: (options) => {
       options = options || { resetFields: true }
       const promises = deduplicateSets(inputs)
-        .map((element) => apiElements.get(element).write({ delete: true }))
+        .map((element) => apiRegistry.get(element).write({ delete: true }))
       return Promise.all(promises).then(() => {
         if (options.resetFields) {
           for (const element in inputs) {
-            var api = apiElements.get(element)
+            var api = apiRegistry.get(element)
             var type = element.getAttribute('type')
             if (type === 'radio' || type === 'checkbox') {
               element.checked = api.initialValue
@@ -256,7 +257,7 @@ function formPrefill(wrapperElement, options) {
     readAll: function () {
       var prefilled = []
       for (const element of inputs) {
-        apiElements.get(element).read().then(function () {
+        apiRegistry.get(element).read().then(function () {
           element.dispatchEvent(new CustomEvent('form-prefill:prefilled', {bubbles: true}))
         }, function (cause) {
           element.dispatchEvent(new CustomEvent('form-prefill:failed', {detail: cause, bubbles: true}))
@@ -268,7 +269,7 @@ function formPrefill(wrapperElement, options) {
   // Initialize elements api
   for (const element of inputs) {
     let api = new Api(element, stores, settings)
-    apiElements.set(element, api)
+    apiRegistry.set(element, api)
     // Write to stores on change
     element.addEventListener('change', () => {
       api.write().then(function () {}, function () {})
@@ -277,17 +278,18 @@ function formPrefill(wrapperElement, options) {
 
   // Prefill fields when the values passed in the hash are stored.
   wrapperElement.addEventListener('form-prefill:stores-filled', () => {
-    apiElements.get(wrapperElement).readAll()
+    apiRegistry.get(wrapperElement).readAll()
   }, false)
   // Prefill fields.
-  apiElements.get(wrapperElement).readAll()
-  return apiElements
+  apiRegistry.get(wrapperElement).readAll()
+  return apiRegistry.get(wrapperElement)
 }
 
 export {
   Api,
   Stores,
   WebStorage,
+  apiRegistry,
   formPrefill,
   readUrlVars,
   storageKeys,

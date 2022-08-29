@@ -69,18 +69,18 @@ api.removeAll()
 api.removeAll({resetFields: false})
 ```
 
-Each field exposes its own API object: `apiElements[form.querySelector('input[name=first_name]')]`
+Each field exposes its own API object in the `apiRegistry`: `apiRegistry.get(form.querySelector('input[name=first_name]'))`
 ```javascript
 let firstName = form.querySelector('input[name=first_name]')
 
 // Read this field’s value from the stores and fill the field in:
-apiElements[firstName].read();
+apiRegistry.get(firstName).read();
 
 // Write this field’s value to the stores. When called on a checkbox or radio, all checkboxes/radios that have the same keys in their data-form-prefill-write attribute are considered one set of fields.
-apiElements[firstName].write();
+apiRegistry.get(firstName).write();
 
 // Clear this field’s value from the stores:
-apiElements[firstName].write({delete: true});
+apiRegistry.get(firstName).write({delete: true});
 ```
 Each of the field API methods returns a Promise.
 
