@@ -118,3 +118,8 @@ When it fails to retrieve a value for a field, it fires `form-prefill:failed` on
 These events bubbles up.
 
 When you call `removeAll()` on the form’s API, `form-prefill:cleared` is fired on the form.
+
+
+## Running the tests
+
+The test-suite is written using Qunit. You can run it by starting a development server (eg. using `php -S localhost:8000`) and then navigating to `qunit.html` (http://localhost:8000/tests/qunit.html).
