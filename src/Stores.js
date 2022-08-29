@@ -1,10 +1,6 @@
-/* global jQuery */
-
 import { CookieStorage } from './CookieStorage'
 import { WebStorage } from './WebStorage'
 import { defaults } from './defaults'
-
-const $ = jQuery
 
 function prefixArray (prefix, arr) {
   for (let i = 0, j = arr.length; i < j; i++) {
