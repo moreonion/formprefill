@@ -2,12 +2,6 @@ import { CookieStorage } from './CookieStorage'
 import { WebStorage } from './WebStorage'
 import { defaults } from './defaults'
 
-function prefixArray (prefix, arr) {
-  for (let i = 0, j = arr.length; i < j; i++) {
-    arr[i] = prefix + ':' + arr[i]
-  }
-}
-
 function getStorage (storageName) {
   if (['sessionStorage', 'localStorage'].indexOf(storageName) < 0) {
     return null
@@ -93,8 +87,8 @@ class Stores {
   }
 
   prefix (keys, list = false) {
-    prefixArray(list ? this.listPrefix : this.stringPrefix, keys)
-    return keys
+    const prefix = list ? this.listPrefix : this.stringPrefix
+    return keys.map((key) => prefix + ':' + key)
   }
 
   setValuesMap (vars) {

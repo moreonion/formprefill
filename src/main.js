@@ -144,16 +144,15 @@ class Api {
   read () {
     const keys = parseAttribute(this.element.dataset.formPrefillRead)
     if (!keys.length) return Promise.reject(new Error('Don’t know which keys to read from.'))
-    this.stores.prefix(keys, this.isList())
-    return this.stores.getFirst(keys).then((value) => {
+    return this.stores.getFirst(this.stores.prefix(keys, this.isList())).then((value) => {
       this.prefill(value)
     })
   }
 
   write (options) {
-    const keys = parseAttribute(this.element.dataset.formPrefillWrite)
+    let keys = parseAttribute(this.element.dataset.formPrefillWrite)
     if (!keys.length) return Promise.reject(new Error('No idea which keys to write to.'))
-    this.stores.prefix(keys, this.isList())
+    keys = this.stores.prefix(keys, this.isList())
     if (options && options.delete === true) {
       return this.stores.removeItems(keys)
     }
