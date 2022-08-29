@@ -37,9 +37,9 @@ let types = {
     },
     select: {
         get: function (element) {
-            let values = Array.from(element.options).filter((option) => {
-                return option.selected
-            }).map((option) => option.value)
+            let values = [...element.options]
+                .filter((option) => option.selected)
+                .map((option) => option.value)
             if (!element.multiple) {
                 return values.length >= 1 ? values[0] : null
             }
@@ -49,9 +49,9 @@ let types = {
             if (!Array.isArray(newValue)) {
                 newValue = [newValue]
             }
-            Array.from(element.options).forEach((option) => {
+            for (const option of element.options) {
                 option.selected = newValue.includes(option.value)
-            })
+            }
         },
     }
 }
