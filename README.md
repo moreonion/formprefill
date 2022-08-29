@@ -53,8 +53,7 @@ formPrefill(document.querySelector('form'), {
 The form’s API is accesible via the return value of `formPrefill(form)`.
 ```javascript
 // Prefill all fields that have values saved in the stores (this is done automatically when you call the plugin on a form):
-let form = document.querySelector('form')
-let api = formPrefill([form])
+let api = formPrefill(document.querySelector('form'))
 api.readAll()
 
 // Write values to the stores for each field in the form:
