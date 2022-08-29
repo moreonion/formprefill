@@ -1,18 +1,18 @@
 {
   "type": "module",
   "name": "@moreonion/formprefill",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "description": "Form prefill library",
   "source": "src/main.js",
   "main": "dist/formprefill.cjs",
-  "module": "dist/formprefill.js",
+  "module": "./dist/formprefill.modern.js",
   "directories": {
     "test": "tests"
   },
   "scripts": {
     "dev": "microbundle watch src/main.js",
-    "dev-build": "microbundle -i src/main.js --no-compress && cp dist/formprefill.cjs formprefill.js",
-    "dist": "microbundle -i src/main.js && cp dist/formprefill.cjs formprefill.min.js",
+    "dev-build": "microbundle -i src/main.js --no-compress",
+    "dist": "microbundle -i src/main.js",
     "lint": "eslint src",
     "fix": "eslint --fix src/**/*.js"
   },
@@ -33,5 +33,9 @@
   "homepage": "https://github.com/moreonion/formprefill#readme",
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "files": [
+    "src",
+    "dist"
+  ]
 }
