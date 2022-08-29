@@ -3,14 +3,9 @@ import { WebStorage } from './WebStorage'
 import { defaults } from './defaults'
 import * as val from './val'
 
-var privates = {
-  WebStorage: WebStorage,
-  Stores: Stores,
-} // Expose methods for testing.
-
 // Util methods:
 
-let storageKeys = defaults.storageKeys = privates.storageKeys = function (element) {
+let storageKeys = defaults.storageKeys = function (element) {
   var type = element.getAttribute('type')
   var name = element.getAttribute('name')
   if (!name) {
@@ -31,19 +26,19 @@ let storageKeys = defaults.storageKeys = privates.storageKeys = function (elemen
   }
 }
 
-var parseAttribute = privates.parseAttribute = function (str) {
+var parseAttribute = function (str) {
   if (Array.isArray(str)) return str
   if (typeof str === 'string' && str) return str.split(' ')
   return []
 }
 
-var serializeAttribute = privates.serializeAttribute = function (arr) {
+var serializeAttribute = function (arr) {
   if (typeof arr === 'string') return arr
   if (Array.isArray(arr)) return arr.join(' ')
   return ''
 }
 
-var deduplicateSets = privates.deduplicateSets = function (elements) {
+var deduplicateSets = function (elements) {
   // Remove all but one from each set of checkboxes or radios with the same
   // write attribute to prevent multiple writes to the stores.
   var sets = []
@@ -68,7 +63,7 @@ var deduplicateSets = privates.deduplicateSets = function (elements) {
 // separator. Each part that contains prefill variables (with the "p:"-prefix)
 // is then removed.
 // All prefill-values are stored into the stores in string and list format.
-var readUrlVars = privates.readUrlVars = function (hash, stores) {
+var readUrlVars = function (hash, stores) {
   hash = hash || window.location.hash.substr(1)
   if (!hash) {
     return ''
@@ -190,8 +185,6 @@ class Api {
   }
 }
 
-privates.Api = Api
-
 document.addEventListener('form-prefill:stores-initialized', function (event) {
   var hash = window.location.hash.substr(1)
   let stores = event.detail
@@ -212,7 +205,7 @@ document.addEventListener('form-prefill:stores-initialized', function (event) {
 function formPrefill(wrapperElements, options) {
   var settings = {...defaults, ...options}
 
-  var stores = privates.stores = Stores.fromSettings(settings)
+  var stores = Stores.fromSettings(settings)
   document.dispatchEvent(new CustomEvent('form-prefill:stores-initialized', {detail: [stores, this], bubbles: true}))
   let apiElements = new WeakMap()
 
