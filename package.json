@@ -16,12 +16,17 @@
     "lint": "eslint src",
     "fix": "eslint --fix src/**/*.js"
   },
-  "keywords": [
-  ],
+  "keywords": [],
   "author": "",
   "license": "LGPL-3.0",
   "devDependencies": {
+    "@babel/eslint-parser": "^7.18.9",
     "core-js": "3",
+    "eslint": "^8.23.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.2.5",
+    "eslint-plugin-promise": "^6.0.1",
     "microbundle": "^0.15.1"
   },
   "dependencies": {},

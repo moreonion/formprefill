@@ -1,5 +1,5 @@
 /* Cookie api taken from https://github.com/madmurphy/cookies.js, released under GNU Public License, version 3 or later */
-var cookies = {
+const cookies = {
   getItem: function (sKey) {
     if (!sKey) {
       return null
@@ -10,7 +10,7 @@ var cookies = {
     if (!sKey || /^(?:expires|max-age|path|domain|secure)$/i.test(sKey)) {
       return false
     }
-    var sExpires = ''
+    let sExpires = ''
     if (vEnd) {
       switch (vEnd.constructor) {
         case Number:
@@ -41,8 +41,8 @@ var cookies = {
     return (new RegExp('(?:^|;\\s*)' + encodeURIComponent(sKey).replace(/[-.+*]/g, '\\$&') + '\\s*\\=')).test(document.cookie)
   },
   keys: function () {
-    var aKeys = document.cookie.replace(/((?:^|\s*;)[^=]+)(?=;|$)|^\s*|\s*(?:=[^;]*)?(?:\1|$)/g, '').split(/\s*(?:=[^;]*)?;\s*/)
-    for (var nLen = aKeys.length, nIdx = 0; nIdx < nLen; nIdx++) {
+    const aKeys = document.cookie.replace(/((?:^|\s*;)[^=]+)(?=;|$)|^\s*|\s*(?:=[^;]*)?(?:\1|$)/g, '').split(/\s*(?:=[^;]*)?;\s*/)
+    for (let nLen = aKeys.length, nIdx = 0; nIdx < nLen; nIdx++) {
       aKeys[nIdx] = decodeURIComponent(aKeys[nIdx])
     }
     return aKeys

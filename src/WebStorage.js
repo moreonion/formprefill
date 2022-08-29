@@ -6,7 +6,7 @@ class WebStorage {
 
   browserSupport () {
     // this is taken from modernizr.
-    var mod = 'modernizr'
+    const mod = 'modernizr'
     try {
       this.storage.setItem(mod, mod)
       this.storage.removeItem(mod)
@@ -34,7 +34,7 @@ class WebStorage {
   getFirst (keys) {
     return new Promise((resolve, reject) => {
       keys.forEach((key) => {
-        var v = this.storage.getItem(this.pfx + ':' + key)
+        const v = this.storage.getItem(this.pfx + ':' + key)
         if (v !== null) {
           resolve(JSON.parse(v))
         }

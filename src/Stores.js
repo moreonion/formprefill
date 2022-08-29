@@ -7,7 +7,7 @@ import { defaults } from './defaults'
 const $ = jQuery
 
 function prefixArray (prefix, arr) {
-  for (var i = 0, j = arr.length; i < j; i++) {
+  for (let i = 0, j = arr.length; i < j; i++) {
     arr[i] = prefix + ':' + arr[i]
   }
 }
@@ -16,7 +16,7 @@ function getStorage (storageName) {
   if (['sessionStorage', 'localStorage'].indexOf(storageName) < 0) {
     return null
   }
-  var storage
+  let storage
   try {
     // when blocking 3rd party cookies trying to access the existing storage
     // will throw an exception
@@ -31,7 +31,7 @@ function getStorage (storageName) {
 
 class Stores {
   static fromSettings (settings) {
-    settings = {...defaults, ...settings}
+    settings = { ...defaults, ...settings }
     const stores = settings.stores || []
     if (settings.useSessionStore) {
       const _sessionStorage = getStorage('sessionStorage')
@@ -81,7 +81,7 @@ class Stores {
 
   getFirst (keys) {
     // This could use Promise.any() once it is standardized.
-    var promisesRejected = 0
+    let promisesRejected = 0
     return new Promise((resolve, reject) => {
       this.stores.forEach((store, index) => {
         store.getFirst(keys).then((value) => {
@@ -102,7 +102,7 @@ class Stores {
   }
 
   setValuesMap (vars) {
-    var promises = []
+    const promises = []
     Object.keys(vars).forEach((key) => {
       const values = vars[key]
       promises.push(this.setItems(this.prefix([key]), values[values.length - 1]))

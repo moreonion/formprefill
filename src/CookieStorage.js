@@ -24,7 +24,7 @@ class CookieStorage {
   getFirst (keys) {
     return new Promise(function (resolve, reject) {
       keys.forEach((key) => {
-        var v = cookies.getItem(this.pfx + ':' + key)
+        const v = cookies.getItem(this.pfx + ':' + key)
         if (v !== null) {
           resolve(JSON.parse(v))
         }
