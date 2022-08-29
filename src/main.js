@@ -202,87 +202,85 @@ document.addEventListener('form-prefill:stores-initialized', function (event) {
   )
 })
 
-function formPrefill(wrapperElements, options) {
+function formPrefill(wrapperElement, options) {
   var settings = {...defaults, ...options}
 
   var stores = Stores.fromSettings(settings)
   document.dispatchEvent(new CustomEvent('form-prefill:stores-initialized', {detail: [stores, this], bubbles: true}))
   let apiElements = new WeakMap()
 
-  for (const wrapperElement of wrapperElements) {
-    let inputs = wrapperElement.querySelectorAll('input, select, textarea, .form-prefill, .form-prefill-list')
-    inputs = [...inputs].filter((element) => {
-      // Exclude file elements. We can't prefill those.
-      if (element.getAttribute('type') === 'file') {
-        return false
-      }
-      // Check nearest include and exclude-wrapper. The innermost counts.
-      var excludeParent = element.closest(settings.exclude)
-      var includeParent = element.closest(settings.include)
-      if (excludeParent) {
-        // Exclude unless there is an include-wrapper inside the exclude wrapper.
-        return includeParent && excludeParent.contains(includeParent)
-      }
-      return true
-    })
-
-    // This is the form’s api
-    apiElements.set(wrapperElement, {
-      writeAll: function () {
-        return Promise.all(
-          deduplicateSets(inputs).map((element) => apiElements.get(element).write())
-        )
-      },
-      removeAll: (options) => {
-        options = options || { resetFields: true }
-        const promises = deduplicateSets(inputs)
-          .map((element) => apiElements.get(element).write({ delete: true }))
-        return Promise.all(promises).then(() => {
-          if (options.resetFields) {
-            for (const element in inputs) {
-              var api = apiElements.get(element)
-              var type = element.getAttribute('type')
-              if (type === 'radio' || type === 'checkbox') {
-                element.checked = api.initialValue
-              }
-              else {
-                val.set(element, api.initialValue)
-              }
-              element.dispatchEvent(new Event('change', {bubbles: true}))
-            }
-          }
-          wrapperElement.dispatchEvent(new CustomEvent('form-prefill:cleared', {bubbles: true}))
-        })
-      },
-      readAll: function () {
-        var prefilled = []
-        for (const element of inputs) {
-          apiElements.get(element).read().then(function () {
-            element.dispatchEvent(new CustomEvent('form-prefill:prefilled', {bubbles: true}))
-          }, function (cause) {
-            element.dispatchEvent(new CustomEvent('form-prefill:failed', {detail: cause, bubbles: true}))
-          })
-        }
-      }
-    })
-
-    // Initialize elements api
-    for (const element of inputs) {
-      let api = new Api(element, stores, settings)
-      apiElements.set(element, api)
-      // Write to stores on change
-      element.addEventListener('change', () => {
-        api.write().then(function () {}, function () {})
-      })
+  let inputs = wrapperElement.querySelectorAll('input, select, textarea, .form-prefill, .form-prefill-list')
+  inputs = [...inputs].filter((element) => {
+    // Exclude file elements. We can't prefill those.
+    if (element.getAttribute('type') === 'file') {
+      return false
     }
+    // Check nearest include and exclude-wrapper. The innermost counts.
+    var excludeParent = element.closest(settings.exclude)
+    var includeParent = element.closest(settings.include)
+    if (excludeParent) {
+      // Exclude unless there is an include-wrapper inside the exclude wrapper.
+      return includeParent && excludeParent.contains(includeParent)
+    }
+    return true
+  })
 
-    // Prefill fields when the values passed in the hash are stored.
-    wrapperElement.addEventListener('form-prefill:stores-filled', () => {
-      apiElements.get(wrapperElement).readAll()
-    }, false)
-    // Prefill fields.
-    apiElements.get(wrapperElement).readAll()
+  // This is the form’s api
+  apiElements.set(wrapperElement, {
+    writeAll: function () {
+      return Promise.all(
+        deduplicateSets(inputs).map((element) => apiElements.get(element).write())
+      )
+    },
+    removeAll: (options) => {
+      options = options || { resetFields: true }
+      const promises = deduplicateSets(inputs)
+        .map((element) => apiElements.get(element).write({ delete: true }))
+      return Promise.all(promises).then(() => {
+        if (options.resetFields) {
+          for (const element in inputs) {
+            var api = apiElements.get(element)
+            var type = element.getAttribute('type')
+            if (type === 'radio' || type === 'checkbox') {
+              element.checked = api.initialValue
+            }
+            else {
+              val.set(element, api.initialValue)
+            }
+            element.dispatchEvent(new Event('change', {bubbles: true}))
+          }
+        }
+        wrapperElement.dispatchEvent(new CustomEvent('form-prefill:cleared', {bubbles: true}))
+      })
+    },
+    readAll: function () {
+      var prefilled = []
+      for (const element of inputs) {
+        apiElements.get(element).read().then(function () {
+          element.dispatchEvent(new CustomEvent('form-prefill:prefilled', {bubbles: true}))
+        }, function (cause) {
+          element.dispatchEvent(new CustomEvent('form-prefill:failed', {detail: cause, bubbles: true}))
+        })
+      }
+    }
+  })
+
+  // Initialize elements api
+  for (const element of inputs) {
+    let api = new Api(element, stores, settings)
+    apiElements.set(element, api)
+    // Write to stores on change
+    element.addEventListener('change', () => {
+      api.write().then(function () {}, function () {})
+    })
   }
+
+  // Prefill fields when the values passed in the hash are stored.
+  wrapperElement.addEventListener('form-prefill:stores-filled', () => {
+    apiElements.get(wrapperElement).readAll()
+  }, false)
+  // Prefill fields.
+  apiElements.get(wrapperElement).readAll()
   return apiElements
 }
 

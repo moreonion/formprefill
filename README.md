@@ -16,7 +16,7 @@ Call `formPrefill()` on the form. If values for any fields are present in one of
 You can pass an options object (see below).
 
 ```javascript
-formPrefill(document.querySelectorAll('form'));
+formPrefill(document.querySelector('form'));
 ```
 
 For each field that you want to prefill or save you have to set the keys in the markup:
@@ -37,7 +37,7 @@ For each field that you want to prefill or save you have to set the keys in the 
 
 In case you’re not in control of the markup, you can pass custom logic to set the keys for a field:
 ```javascript
-formPrefill(document.querySelectorAll('form'), {
+formPrefill(document.querySelector('form'), {
   storageKeys: function($element) {
     // Guess the keys from $element...
     return {
@@ -50,23 +50,23 @@ formPrefill(document.querySelectorAll('form'), {
 
 ## API
 
-The form’s API is accesible via `$('form').data('formPrefill')`.
+The form’s API is accesible via the return value of `formPrefill(form)`.
 ```javascript
 // Prefill all fields that have values saved in the stores (this is done automatically when you call the plugin on a form):
 let form = document.querySelector('form')
-let apiElements = formPrefill([form])
-apiElements[form].readAll()
+let api = formPrefill([form])
+api.readAll()
 
 // Write values to the stores for each field in the form:
 // Use this with caution: Depending on your exclusions this will also include unchanged default values
 // and hidden-fields used internally by your backend (ie. form tokens).
-apiElements[form].writeAll()
+api.writeAll()
 
 // Clear values from the stores for each field in the form and reset their values to what they were when the plugin was initialized:
-apiElements[form].removeAll()
+api.removeAll()
 
 // Clear each field’s values from the stores, leave the current field values untouched:
-$('form').data('formPrefill').removeAll({resetFields: false})
+api.removeAll({resetFields: false})
 ```
 
 Each field exposes its own API object: `apiElements[form.querySelector('input[name=first_name]')]`
