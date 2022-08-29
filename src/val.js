@@ -12,13 +12,19 @@ function defaultGet(element) {
 /**
  * Default setter that works for elements with a value attribute.
  *
- * @param {Element} element
+ * @param {HTMLElement} element
  * @param {*} newValue
  */
 function defaultSet(element, newValue) {
     element.value = newValue
 }
 
+/**
+ * Set the checked property of an element based on an input value.
+ *
+ * @param {HTMLElement} element
+ * @param {string|Array} newValue
+ */
 function setChecked(element, newValue) {
     if (!Array.isArray(newValue)) {
         newValue = [newValue]
@@ -26,6 +32,9 @@ function setChecked(element, newValue) {
     element.checked = newValue.includes(element.value)
 }
 
+/**
+ * Mapping of “types“ to getter and setter methods.
+ */
 let types = {
     checkbox: {
         get: defaultGet,
@@ -36,6 +45,15 @@ let types = {
         set: setChecked,
     },
     select: {
+        /**
+         * Get the current value of a select element.
+         *
+         * For a single-value <select> this returns a string. For multi-value selects it returns a
+         * list of strings.
+         *
+         * @param {HTMLElement} element The select element which’s value is being read
+         * @returns {(string|Array)} The value of the select element.
+         */
         get: function (element) {
             let values = [...element.options]
                 .filter((option) => option.selected)
@@ -45,6 +63,12 @@ let types = {
             }
             return values
         },
+        /**
+         * Set the value of a select element
+         *
+         * @param {HTMLElement} element The select element which’s options’ should be updated.
+         * @param {(string|Array)} newValue  A single or multiple value strings.
+         */
         set: function (element, newValue) {
             if (!Array.isArray(newValue)) {
                 newValue = [newValue]
@@ -56,36 +80,33 @@ let types = {
     }
 }
 
+/**
+ * Determine how values can be read/set for a given element.
+ *
+ * @param {HTMLElement} element
+ * @returns {object} An object with a get and set method.
+ */
 function getType(element) {
-    if (element.dataset.valueType) {
-        return element.dataset.valueType
-    }
-    if (element.hasAttribute("type")) {
-        return element.getAttribute("type")
-    }
-    return element.tagName.toLowerCase()
+    return (
+        types[element.dataset.valueType] ||
+        types[element.getAttribute("type")] ||
+        types[element.tagName.toLowerCase()] ||
+        { get: defaultGet, set: defaultSet }
+    )
 }
 
 /**
  * Read the element’s value.
  */
 function get(element) {
-    let typeName, type
-    if ((typeName = getType(element)) && (type = types[typeName])) {
-        return type.get(element)
-    }
-    return defaultGet(element)
+    return getType(element).get(element)
 }
 
 /**
  * Set the element’s value.
  */
 function set(element, newValue) {
-    let typeName, type
-    if ((typeName = getType(element)) && (type = types[typeName])) {
-        return type.set(element, newValue)
-    }
-    return defaultSet(element, newValue)
+    return getType(element).set(element, newValue)
 }
 
 export {
