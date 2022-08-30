@@ -172,9 +172,8 @@ class Api {
       // Get the value from all inputs that write to the same keys.
       let selector = ''
       const writeKeys = this.element.dataset.formPrefillWrite
-      if (writeKeys) selector += '[data-form-prefill-write="' + writeKeys + '"]'
+      if (writeKeys) selector += '[data-form-prefill-write="' + writeKeys + '"]:checked'
       const checkedValues = [...this.element.closest('form').querySelectorAll(selector)]
-        .filter((element) => element.checked)
         .map((element) => element.value)
       return checkedValues
     }
