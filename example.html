@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>jquery.formprefill example</title>
+    <title>formprefill example</title>
   </head>
   <body>
     <form>
@@ -13,23 +13,21 @@
     </form>
 
     <button id="clear">Clear stores</button>
+    <script type="module">
+      import { formPrefill } from "./dist/formprefill.modern.js"
 
-    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-    <script src="jquery.formprefill.js"></script>
-    <script type="text/javascript">
-      $('#clear').click(function() {
-        $('#testform').data('formPrefill').removeAll();
-      });
-      $('form').on('form-prefill:prefilled', function(e) {
-        console.log('form-prefill:prefilled', e.target);
-      });
-      $('form').on('form-prefill:failed', function(e, data) {
-        console.log('form-prefill:failed', e.target, data);
-      });
-      $('form').on('form-prefill:cleared', function() {
-        console.log('form-prefill:cleared');
-      });
-      $('form').formPrefill();
+      const form = document.querySelector('form')
+      const api = formPrefill(form)
+      document.querySelector('#clear').addEventListener('click', () => api.removeAll())
+      form.addEventListener('form-prefill:prefilled', (event) => {
+        console.log('form-prefill:prefilled', event.target)
+      })
+      form.addEventListener('form-prefill:failed', (event) => {
+        console.log('form-prefill:failed', event.target)
+      })
+      form.addEventListener('form-prefill:cleared', (event) => {
+        console.log('form-prefill:cleared', event.target)
+      })
     </script>
   </body>
 </html>
