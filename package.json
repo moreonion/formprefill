@@ -13,8 +13,8 @@
     "dev": "microbundle watch src/main.js",
     "dev-build": "microbundle -i src/main.js --no-compress",
     "dist": "microbundle -i src/main.js",
-    "lint": "eslint src",
-    "fix": "eslint --fix src/**/*.js"
+    "lint": "eslint src tests",
+    "fix": "eslint --fix src tests"
   },
   "keywords": [],
   "author": "",
