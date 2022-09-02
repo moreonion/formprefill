@@ -190,7 +190,7 @@ class Api {
 
 document.addEventListener('form-prefill:stores-initialized', function (event) {
   const hash = window.location.hash.substr(1)
-  const stores = event.detail
+  const stores = event.detail.stores
   if (hash) {
     const newHash = readUrlVars(hash, stores)
     if (newHash !== hash) {
@@ -199,7 +199,7 @@ document.addEventListener('form-prefill:stores-initialized', function (event) {
   }
   event.target.dispatchEvent(
     new CustomEvent('form-prefill:stores-filled', {
-      detail: stores,
+      detail: { stores },
       bubbles: true
     })
   )
@@ -211,7 +211,7 @@ function formPrefill (wrapperElement, options) {
   const settings = { ...defaults, ...options }
 
   const stores = Stores.fromSettings(settings)
-  document.dispatchEvent(new CustomEvent('form-prefill:stores-initialized', { detail: [stores, this], bubbles: true }))
+  wrapperElement.dispatchEvent(new CustomEvent('form-prefill:stores-initialized', { detail: { stores }, bubbles: true }))
 
   let inputs = wrapperElement.querySelectorAll('input, select, textarea, .form-prefill, .form-prefill-list')
   inputs = [...inputs].filter((element) => {
