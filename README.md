@@ -4,15 +4,19 @@ Built by [more onion](https://www.more-onion.com) as a part of [Campaignion](htt
 
 ## Installation
 
-Pull in `jquery.formprefill.min.js` after jQuery.
-Promises have to be polyfilled for IE.
+```javascript
+import { formPrefill } from "path/to/formprefill.min.js";
+```
+
+Note: Promises and other ES6 features might need polyfilling for IE.
 
 ## Usage
 
 Call `formPrefill()` on the form. If values for any fields are present in one of the stores, the fields are prefilled with the corresponding values.
 You can pass an options object (see below).
+
 ```javascript
-$('form').formPrefill();
+formPrefill(document.querySelector('form'));
 ```
 
 For each field that you want to prefill or save you have to set the keys in the markup:
@@ -33,7 +37,7 @@ For each field that you want to prefill or save you have to set the keys in the 
 
 In case you’re not in control of the markup, you can pass custom logic to set the keys for a field:
 ```javascript
-$('form').formPrefill({
+formPrefill(document.querySelector('form'), {
   storageKeys: function($element) {
     // Guess the keys from $element...
     return {
@@ -46,35 +50,36 @@ $('form').formPrefill({
 
 ## API
 
-The form’s API is accesible via `$('form').data('formPrefill')`.
+The form’s API is accesible via the return value of `formPrefill(form)`.
 ```javascript
 // Prefill all fields that have values saved in the stores (this is done automatically when you call the plugin on a form):
-$('form').data('formPrefill').readAll();
+let api = formPrefill(document.querySelector('form'))
+api.readAll()
 
 // Write values to the stores for each field in the form:
 // Use this with caution: Depending on your exclusions this will also include unchanged default values
 // and hidden-fields used internally by your backend (ie. form tokens).
-$('form').data('formPrefill').writeAll();
+api.writeAll()
 
 // Clear values from the stores for each field in the form and reset their values to what they were when the plugin was initialized:
-$('form').data('formPrefill').removeAll();
+api.removeAll()
 
 // Clear each field’s values from the stores, leave the current field values untouched:
-$('form').data('formPrefill').removeAll({resetFields: false});
+api.removeAll({resetFields: false})
 ```
 
-Each field exposes an own API: `$('form').find('input[name=first_name]').data('formPrefill')`
+Each field exposes its own API object in the `apiRegistry`: `apiRegistry.get(form.querySelector('input[name=first_name]'))`
 ```javascript
-var $firstName = $('form').find('input[name=first_name]');
+let firstName = form.querySelector('input[name=first_name]')
 
 // Read this field’s value from the stores and fill the field in:
-$firstName.data('formPrefill').read();
+apiRegistry.get(firstName).read();
 
 // Write this field’s value to the stores. When called on a checkbox or radio, all checkboxes/radios that have the same keys in their data-form-prefill-write attribute are considered one set of fields.
-$firstName.data('formPrefill').write();
+apiRegistry.get(firstName).write();
 
 // Clear this field’s value from the stores:
-$firstName.data('formPrefill').write({delete: true});
+apiRegistry.get(firstName).write({delete: true});
 ```
 Each of the field API methods returns a Promise.
 
@@ -105,10 +110,15 @@ Hash examples:
 
 ## Events
 
-By default, the stores are updated when fields fire the `change` event. You can remove these handlers: `$('form').find('*').off('.form-prefill')`.
+By default, the stores are updated when fields fire the `change` event.
 
 When the plugin populates a field, it fires `form-prefill:prefilled` on the field.
 When it fails to retrieve a value for a field, it fires `form-prefill:failed` on the field, providing the cause as the second argument to the handler function.
 These events bubbles up.
 
 When you call `removeAll()` on the form’s API, `form-prefill:cleared` is fired on the form.
+
+
+## Running the tests
+
+The test-suite is written using Qunit. You can run it by starting a development server (eg. using `php -S localhost:8000`) and then navigating to `qunit.html` (http://localhost:8000/tests/qunit.html).

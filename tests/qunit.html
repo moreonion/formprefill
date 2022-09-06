@@ -10,8 +10,6 @@
   <div id="qunit-fixture"></div>
   <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
   <script src="https://code.jquery.com/qunit/qunit-2.1.1.js"></script>
-  <script src="../jquery.formprefill.js"></script>
-
 <script>
 
 // Stub a store.
@@ -32,11 +30,11 @@ Store.prototype.getFirst = function(keys) {
 };
 
 </script>
-<script src="utils.test.js"></script>
-<script src="SessionStorage.test.js"></script>
-<script src="LocalStorage.test.js"></script>
-<script src="Api.test.js"></script>
-<script src="integration.test.js"></script>
+<script type="module" src="utils.test.js"></script>
+<script type="module" src="SessionStorage.test.js"></script>
+<script type="module" src="LocalStorage.test.js"></script>
+<script type="module" src="Api.test.js"></script>
+<script type="module" src="integration.test.js"></script>
 
 </body>
 </html>
