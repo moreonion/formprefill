@@ -69,21 +69,16 @@ class Stores {
     return Promise.all(promises)
   }
 
-  getFirst (keys) {
-    // This could use Promise.any() once it is standardized.
-    let promisesRejected = 0
-    return new Promise((resolve, reject) => {
-      this.stores.forEach((store, index) => {
-        store.getFirst(keys).then((value) => {
-          resolve(value)
-        }, (cause) => {
-          // Reject only when all of the stores have rejected.
-          if (++promisesRejected === this.stores.length) {
-            reject(cause)
-          }
-        })
-      })
-    })
+  async getFirst (keys) {
+    for (const store of this.stores) {
+      try {
+        return await store.getFirst(keys)
+      }
+      catch (cause) {
+        // Try the next store
+      }
+    }
+    return null
   }
 
   prefix (keys, list = false) {
