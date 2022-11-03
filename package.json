@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@moreonion/formprefill",
-  "version": "0.14.1",
+  "version": "0.15.0",
   "description": "Form prefill library",
   "source": "src/main.js",
   "main": "dist/formprefill.cjs",
