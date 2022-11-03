@@ -11,38 +11,40 @@ function getStorage (storageName) {
     // when blocking 3rd party cookies trying to access the existing storage
     // will throw an exception
     // see https://bugs.chromium.org/p/chromium/issues/detail?id=357625
-    storage = window[storageName]
+    return window[storageName]
   }
   catch (e) {
+    // Ignore errors: Simply don’t use the storage.
     return null
   }
-  return storage
 }
 
 class Stores {
   static fromSettings (settings) {
     settings = { ...defaults, ...settings }
-    const stores = settings.stores || []
-    if (settings.useSessionStore) {
-      const _sessionStorage = getStorage('sessionStorage')
-      if (_sessionStorage) {
-        const s = new WebStorage(_sessionStorage, settings.prefix)
-        if (s.browserSupport()) {
-          stores.push(s)
+    const stores = []
+    let storage, store
+    for (const storeConfig of settings.stores) {
+      if (typeof storeConfig === 'string') {
+        switch (storeConfig) {
+          case 'sessionStorage':
+          case 'localStorage':
+            storage = getStorage(storeConfig)
+            if (storage) {
+              store = new WebStorage(storage, settings.prefix)
+              if (store.browserSupport()) {
+                stores.push(store)
+              }
+            }
+            break
+          case 'cookie':
+            stores.push(new CookieStorage(settings.prefix, settings.cookieDomain, settings.cookieMaxAge))
+            break
         }
       }
-    }
-    if (settings.useLocalStore) {
-      const _localStorage = getStorage('localStorage')
-      if (_localStorage) {
-        const s = new WebStorage(_localStorage, settings.prefix)
-        if (s.browserSupport()) {
-          stores.push(s)
-        }
+      else {
+        stores.push(storeConfig)
       }
-    }
-    if (settings.useCookies) {
-      stores.push(new CookieStorage(settings.prefix, settings.cookieDomain, settings.cookieMaxAge))
     }
     return new this(stores, settings.stringPrefix, settings.listPrefix)
   }
@@ -69,21 +71,16 @@ class Stores {
     return Promise.all(promises)
   }
 
-  getFirst (keys) {
-    // This could use Promise.any() once it is standardized.
-    let promisesRejected = 0
-    return new Promise((resolve, reject) => {
-      this.stores.forEach((store, index) => {
-        store.getFirst(keys).then((value) => {
-          resolve(value)
-        }, (cause) => {
-          // Reject only when all of the stores have rejected.
-          if (++promisesRejected === this.stores.length) {
-            reject(cause)
-          }
-        })
-      })
-    })
+  async getFirst (keys) {
+    for (const store of this.stores) {
+      try {
+        return await store.getFirst(keys)
+      }
+      catch (cause) {
+        // Try the next store
+      }
+    }
+    return null
   }
 
   prefix (keys, list = false) {

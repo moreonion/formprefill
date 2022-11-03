@@ -11,10 +11,9 @@ const defaults = {
   include: '[data-form-prefill-include]',
   stringPrefix: 's',
   listPrefix: 'l',
-  stores: [],
-  useSessionStore: true,
-  useLocalStore: false,
-  useCookies: false,
+  stores: [
+    'sessionStorage',
+  ],
   cookieDomain: '',
   cookieMaxAge: Infinity
 }

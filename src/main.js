@@ -141,12 +141,15 @@ class Api {
     element.dataset.formPrefillRead = serializeAttribute(readKeys.concat(aliases))
   }
 
-  read () {
+  async read () {
     const keys = parseAttribute(this.element.dataset.formPrefillRead)
-    if (!keys.length) return Promise.reject(new Error('Don’t know which keys to read from.'))
-    return this.stores.getFirst(this.stores.prefix(keys, this.isList())).then((value) => {
+    if (!keys.length) {
+      throw new Error('Don’t know which keys to read from.')
+    }
+    const value = await this.stores.getFirst(this.stores.prefix(keys, this.isList()))
+    if (value !== null) {
       this.prefill(value)
-    })
+    }
   }
 
   write (options) {
