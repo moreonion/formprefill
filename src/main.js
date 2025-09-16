@@ -165,8 +165,9 @@ class Api {
   }
 
   prefill (value) {
-    val.set(this.element, value)
-    this.element.dispatchEvent(new Event('change', { bubbles: true }))
+    if (val.set(this.element, value) !== false) {
+      this.element.dispatchEvent(new Event('change', { bubbles: true }))
+    }
   }
 
   getVal () {

@@ -29,7 +29,6 @@
     "eslint-plugin-promise": "^6.0.1",
     "microbundle": "^0.15.1"
   },
-  "dependencies": {},
   "homepage": "https://github.com/moreonion/formprefill#readme",
   "publishConfig": {
     "access": "public"
@@ -37,5 +36,6 @@
   "files": [
     "src",
     "dist"
-  ]
+  ],
+  "packageManager": "yarn@4.6.0"
 }

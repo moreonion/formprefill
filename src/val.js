@@ -42,7 +42,10 @@ const types = {
   },
   radio: {
     get: defaultGet,
-    set: setChecked,
+    set: function (element, newValue) {
+      setChecked(element, newValue)
+      return element.checked
+    }
   },
   select: {
     /**
